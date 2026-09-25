@@ -1,42 +1,21 @@
 // Gold n Crypto Traders — app.js
 
-// 1. LIVE price ticker (CoinGecko free API, auto-refresh every 60s)
-const COINS = [
-  {id:'bitcoin', sym:'BTC'}, {id:'ethereum', sym:'ETH'},
-  {id:'solana', sym:'SOL'}, {id:'binancecoin', sym:'BNB'}
+// 1. Live ticker (demo data - real API connects in Phase 2)
+const TICKS = [
+  ["BTC", 97420, 2.4], ["ETH", 3412, 1.8], ["GOLD", 2915, 0.6],
+  ["SOL", 214, -1.2], ["BNB", 692, 0.9], ["XRP", 2.41, -0.8],
+  ["DOGE", 0.32, 3.1], ["SENSEX", 81455, 0.4]
 ];
-const DEMO = [["BTC",97420,2.4],["ETH",3412,1.8],["SOL",214,-1.2],["BNB",692,0.9],["GOLD",2915,0.6]];
-
-async function loadTicker(){
+(function(){
   const t = document.getElementById('tickerTrack');
   if(!t) return;
-  let rows = DEMO;
-  try{
-    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin&vs_currencies=usd&include_24hr_change=true');
-    const d = await r.json();
-    rows = COINS.map(c => [c.sym, d[c.id].usd, d[c.id].usd_24h_change]);
-    rows.push(["GOLD", await getGold(), 0.4]);
-  }catch(e){ /* fallback to demo */ }
-  const html = rows.map(([s,p,c]) =>
-    `<span><b>${s}</b> $${Number(p).toLocaleString('en-IN',{maximumFractionDigits:2})} <b class="${c>=0?'up':'down'}">${c>=0?'▲':'▼'} ${Math.abs(c).toFixed(1)}%</b></span>`
+  const html = TICKS.map(([s,p,c]) =>
+    `<span><b>${s}</b> $${p.toLocaleString('en-IN')} <b class="${c>=0?'up':'down'}">${c>=0?'▲':'▼'} ${Math.abs(c)}%</b></span>`
   ).join('');
-  t.innerHTML = html + html;
-  const lv = document.getElementById('livePrices');
-  if(lv) lv.innerHTML = rows.map(([s,p,c]) =>
-    `<div class="factor"><span>${s}/USD</span><b>$${Number(p).toLocaleString('en-IN',{maximumFractionDigits:2})} <span class="${c>=0?'up':'down'}">${c>=0?'▲':'▼'}${Math.abs(c).toFixed(1)}%</span></b></div>`
-  ).join('');
-}
-async function getGold(){
-  try{
-    const r = await fetch('https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv');
-    const line = (await r.text()).trim().split('\n')[1];
-    return parseFloat(line.split(',')[6]) || 2915;
-  }catch(e){ return 2915; }
-}
-loadTicker();
-setInterval(loadTicker, 60000);
+  t.innerHTML = html + html; // loop ke liye duplicate
+})();
 
-// 2. Beginner mode toggle
+// 2. Beginner mode toggle (macro section)
 (function(){
   const tg = document.getElementById('beginnerToggle');
   const tx = document.getElementById('beginnerText');
@@ -56,6 +35,7 @@ function logout(){
   localStorage.removeItem('gnc_user');
   window.location.href = 'index.html';
 }
+// Dashboard guard
 (function(){
   if(window.location.pathname.endsWith('dashboard.html')){
     const u = localStorage.getItem('gnc_user');

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal Sender — Gold n Crypto Traders (ADMIN)</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.admin{max-width:700px;margin:auto;padding:2rem 1rem 4rem}
+.admin input,.admin textarea{width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554;font-family:inherit}
+.admin textarea{min-height:280px;font-size:.92rem;line-height:1.6}
+.admin label{font-weight:700;color:#f5b942;font-size:.9rem}
+.status{margin-top:1rem;padding:1rem;border-radius:10px;display:none}
+.status.ok{display:block;background:rgba(34,197,94,.12);border:1px solid #22c55e}
+.status.err{display:block;background:rgba(239,68,68,.12);border:1px solid #ef4444}
+.warn{background:rgba(245,185,66,.08);border:1px solid rgba(245,185,66,.4);border-radius:12px;padding:1rem;margin-bottom:1.5rem;font-size:.88rem;color:#8b94a7}
+.big-btn{width:100%;padding:1.1rem;font-size:1.1rem;margin-top:.8rem}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-inner">
+  <a href="index.html" class="logo">🪙 Gold n Crypto <span>Traders</span></a>
+  <span class="tag" style="margin-left:auto">ADMIN ONLY</span>
+</div></nav>
+
+<div class="admin">
+  <h2>📡 Signal Sender</h2>
+  <p class="muted">One button: fetches live prices → builds your signal → sends it to Telegram.</p>
+
+  <div class="warn">⚠️ <b>Keep this page private.</b> It holds your bot token. Do NOT upload <b>admin.html</b> to Vercel — open it only from your own computer/phone.</div>
+
+  <label>Bot Token (from @BotFather — enter once, saved in this browser)</label>
+  <input id="botToken" type="password" placeholder="123456:ABC-DEF...">
+  <label>Channel Chat ID (e.g. -1001234567890)</label>
+  <input id="chatId" type="text" placeholder="-100...">
+  <p class="muted small">How to get Chat ID: 1) Make your bot an <b>admin</b> of the channel. 2) Post any message in the channel. 3) Open <b>https://api.telegram.org/bot&lt;YOUR_TOKEN&gt;/getUpdates</b> in browser → find <b>"chat":{"id":-100...}</b>.</p>
+  <button class="btn btn-outline" onclick="saveCreds()">💾 Save Details</button>
+
+  <hr style="border-color:#1e293b;margin:1.8rem 0">
+
+  <label>Signal Message (edit before sending — prices auto-fill on fetch)</label>
+  <textarea id="msgBox">🪙 *GOLD N CRYPTO — SIGNAL UPDATE*
+
+📊 *Live Prices:*
+• BTC: $______
+• ETH: $______
+• GOLD: $______/oz
+
+🎯 *Bias:* Cautiously bullish — macro improving, watch CPI volatility.
+
+⚠️ Not financial advice. Trade at your own risk.
+— Team Gold n Crypto Traders</textarea>
+
+  <button class="btn btn-gold big-btn" onclick="fetchAndSend()">📡 Fetch Live Data & Send Signal</button>
+  <button class="btn btn-outline big-btn" onclick="sendOnly()">📤 Send As-Is (no fetch)</button>
+
+  <div id="status" class="status"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+window.onload = () => {
+  $('botToken').value = localStorage.getItem('gnc_bot') || '';
+  $('chatId').value = localStorage.getItem('gnc_chat') || '';
+};
+function saveCreds(){
+  localStorage.setItem('gnc_bot', $('botToken').value.trim());
+  localStorage.setItem('gnc_chat', $('chatId').value.trim());
+  show('Details saved in this browser. ✅','ok');
+}
+function show(t, cls){ const s=$('status'); s.className='status '+cls; s.innerHTML=t; }
+async function getPrices(){
+  const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
+  const d = await r.json();
+  let gold = 2915;
+  try{
+    const g = await fetch('https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv');
+    gold = parseFloat((await g.text()).trim().split('\n')[1].split(',')[6]) || 2915;
+  }catch(e){}
+  return { btc: d.bitcoin.usd, eth: d.ethereum.usd, gold };
+}
+async function sendTelegram(text){
+  const token = $('botToken').value.trim(), chat = $('chatId').value.trim();
+  if(!token || !chat){ show('Enter bot token and chat ID first!','err'); return false; }
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ chat_id: chat, text, parse_mode:'Markdown' }) });
+  const d = await r.json();
+  if(d.ok){ show('✅ Signal sent to Telegram successfully!','ok'); return true; }
+  show('❌ Failed: ' + (d.description || 'unknown error'), 'err'); return false;
+}
+async function fetchAndSend(){
+  show('⏳ Fetching live prices...','ok');
+  try{
+    const p = await getPrices();
+    let msg = $('msgBox').value
+      .replace(/BTC: \$[\d,._]*/g, 'BTC: $' + p.btc.toLocaleString('en-IN'))
+      .replace(/ETH: \$[\d,._]*/g, 'ETH: $' + p.eth.toLocaleString('en-IN'))
+      .replace(/GOLD: \$[\d,._]*/g, 'GOLD: $' + p.gold.toLocaleString('en-IN'));
+    $('msgBox').value = msg;
+    show('⏳ Sending to Telegram...','ok');
+    await sendTelegram(msg);
+  }catch(e){ show('❌ Price fetch failed. Check internet and try again.','err'); }
+}
+async function sendOnly(){ await sendTelegram($('msgBox').value); }
+</script>
+</body>
+</html>
