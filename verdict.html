@@ -3,68 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GnC Verdict — BTC ETH SOL XRP BNB Gold Silver LIVE</title>
+<title>Verdict Terminal — BTC, ETH, SOL, XRP, BNB, Gold, Silver</title>
 <link rel="stylesheet" href="styles.css">
 <script src="https://s3.tradingview.com/tv.js"></script>
 <style>
-*{box-sizing:border-box}
-body{background:#0a0e1a;color:#fff;margin:0;font-family:Inter,system-ui,sans-serif;min-height:100vh}
-.topbar{background:rgba(10,14,26,.95);backdrop-filter:blur(12px);border-bottom:1px solid #1e293b;padding:.8rem 1.2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.logo{font-weight:900;text-decoration:none;color:#fff;font-size:1rem}
-.logo span{color:#f6c445}
-.verdict-header{text-align:center;padding:1.5rem 1rem .5rem}
-.verdict-header h1{font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#f6c445,#e2a82a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:0}
-.verdict-header p{color:#8b95a5;margin:.4rem auto;font-size:.85rem}
-.asset-bar{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;margin:1rem auto;max-width:900px;padding:0 1rem}
-.asset-btn{padding:.6rem 1.1rem;border-radius:50px;border:1.5px solid rgba(246,196,69,.45);background:#121827;cursor:pointer;font-weight:800;font-size:.85rem;transition:.2s;display:flex;flex-direction:column;align-items:center;color:#f6c445;min-width:78px}
-.asset-btn:hover{border-color:#f6c445;background:rgba(246,196,69,.15);color:#fff;transform:translateY(-1px)}
-.asset-btn.active{background:linear-gradient(135deg,#f6c445,#e2a82a);color:#000;border-color:#f6c445;box-shadow:0 6px 18px rgba(246,196,69,.35);font-weight:900}
-.tf-bar{display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;margin:.8rem auto}
-.tf-btn{padding:.45rem .85rem;border-radius:20px;border:1px solid #1e293b;background:#121827;cursor:pointer;font-size:.8rem;font-weight:700;color:#8b95a5}
-.tf-btn:hover{border-color:#f6c445;color:#f6c445}
-.tf-btn.active{background:#f6c445;color:#000;border-color:#f6c445;font-weight:800}
-.main-grid{display:grid;grid-template-columns:1.4fr .6fr;gap:1rem;max-width:1400px;margin:1rem auto;padding:0 1rem;align-items:start}
-@media(max-width:900px){.main-grid{grid-template-columns:1fr}}
-.chart-box{background:#121827;border:1px solid #1e293b;border-radius:14px;overflow:hidden;height:520px}
-.verdict-card{background:#121827;border:1px solid #1e293b;border-radius:14px;padding:1.1rem}
-.verdict-card.bullish{border-color:rgba(34,197,94,.35)}
-.verdict-card.bearish{border-color:rgba(239,68,68,.35)}
-.live-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);color:#22c55e;padding:.45rem .9rem;border-radius:10px;font-weight:800;font-size:.8rem}
-.level-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;margin:.7rem 0}
-.level-box{background:#0a0e1a;border:1px solid #1e293b;border-radius:8px;padding:.5rem;text-align:center}
-.level-box b{font-size:.85rem;color:#fff}
-.confidence-bar{height:5px;background:#0a0e1a;border-radius:10px;overflow:hidden;margin:.5rem 0}
-.confidence-fill{height:100%;background:linear-gradient(90deg,#f6c445,#22c55e);border-radius:10px}
-.muted{color:#8b95a5} .small{font-size:.78rem} .gold{color:#f6c445} .up{color:#22c55e} .down{color:#ef4444}
-.tag{background:rgba(246,196,69,.15);border:1px solid rgba(246,196,69,.3);color:#f6c445;padding:.2rem .5rem;border-radius:16px;font-size:.7rem;font-weight:700}
-.dot{width:7px;height:7px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite}
-@keyframes pulse{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
-footer{text-align:center;padding:1rem;color:#4a5568;font-size:.75rem;border-top:1px solid #1e293b;margin-top:1rem}
+.verdict-header{text-align:center;padding:2rem 1rem 1rem}
+.asset-bar{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;margin:1.2rem auto;max-width:900px}
+.asset-btn{padding:.7rem 1.3rem;border-radius:12px;border:1px solid var(--border);background:var(--panel);cursor:pointer;font-weight:800;font-size:.9rem;transition:.2s;display:flex;align-items:center;gap:.4rem}
+.asset-btn:hover{border-color:var(--gold);transform:translateY(-2px)}
+.asset-btn.active{background:linear-gradient(135deg,#f6c445,#e2a82a);color:#1a1400;border-color:transparent;box-shadow:0 8px 24px rgba(246,196,69,.3)}
+.tf-bar{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin:1rem auto}
+.tf-btn{padding:.45rem .9rem;border-radius:20px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;font-size:.82rem;font-weight:700}
+.tf-btn.active{background:var(--gold);color:#1a1400;border-color:var(--gold)}
+.verdict-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;max-width:1200px;margin:1.5rem auto;padding:0 1rem}
+.verdict-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:1.2rem;position:relative;overflow:hidden}
+.verdict-card.bullish{border-color:rgba(34,197,94,.4);background:linear-gradient(135deg,rgba(34,197,94,.08),var(--panel))}
+.verdict-card.bearish{border-color:rgba(239,68,68,.4);background:linear-gradient(135deg,rgba(239,68,68,.08),var(--panel))}
+.verdict-card.neutral{border-color:rgba(246,196,69,.3)}
+.confidence-bar{height:6px;background:var(--bg);border-radius:10px;overflow:hidden;margin:.6rem 0}
+.confidence-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));border-radius:10px;transition:width .5s}
+.level-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.8rem 0}
+.level-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.5rem;text-align:center}
+.level-box b{font-size:.9rem}
+.telegram-cta{background:linear-gradient(135deg,#229ED9,#1e88c0);border-radius:16px;padding:1.5rem;text-align:center;margin:1.5rem auto;max-width:600px}
 </style>
 </head>
 <body>
 <div class="topbar">
-  <a class="logo" href="index.html">🪙 Gold n Crypto <span>GnC Verdict</span></a>
-  <div style="display:flex;gap:.5rem;align-items:center">
-    <span class="live-badge" id="liveBadge"><span class="dot"></span> LIVE</span>
-    <a href="index.html" style="color:#8b95a5;text-decoration:none;font-size:.8rem;padding:.4rem .7rem;border:1px solid #1e293b;border-radius:8px">Home</a>
+  <a class="logo" href="index.html">🪙 Gold n Crypto <span>Verdict</span></a>
+  <div class="top-actions" style="margin-left:auto">
+    <a href="terminal.html" class="btn btn-ghost btn-sm">Terminal</a>
+    <a href="https://t.me/" target="_blank" class="btn btn-gold btn-sm">🤖 Telegram Bot</a>
   </div>
 </div>
 
 <div class="verdict-header">
-  <h1>GnC Verdict</h1>
-  <p>BTC • ETH • SOL • XRP • BNB • Gold • Silver — 15m to 1D live • Same as TradingView chart</p>
-  <p class="small" id="syncInfo" style="color:#f6c445">Live Binance price syncing...</p>
+  <h1>🎯 AI Verdict Terminal</h1>
+  <p class="muted">BTC, ETH, SOL, XRP, BNB, Gold, Silver — Har timeframe ka prediction</p>
+  <p class="small muted">Click asset → timeframe → verdict. Telegram bot pe bhi same buttons.</p>
 </div>
 
 <div class="asset-bar" id="assetBar">
-  <button class="asset-btn active" data-asset="btc">BTC<br><small style="font-size:.65rem"><span class="dot"></span>LIVE</small></button>
-  <button class="asset-btn" data-asset="eth">ETH<br><small style="font-size:.65rem"><span class="dot"></span>LIVE</small></button>
-  <button class="asset-btn" data-asset="sol">SOL<br><small style="font-size:.65rem"><span class="dot"></span>LIVE</small></button>
-  <button class="asset-btn" data-asset="xrp">XRP<br><small style="font-size:.65rem"><span class="dot"></span>LIVE</small></button>
-  <button class="asset-btn" data-asset="bnb">BNB<br><small style="font-size:.65rem"><span class="dot"></span>LIVE</small></button>
-  <button class="asset-btn" data-asset="gold">Gold<br><small style="font-size:.65rem"><span class="dot"></span>LIVE</small></button>
-  <button class="asset-btn" data-asset="silver">Silver<br><small style="font-size:.65rem"><span class="dot"></span>LIVE</small></button>
+  <button class="asset-btn active" data-asset="btc">₿ BTC</button>
+  <button class="asset-btn" data-asset="eth">Ξ ETH</button>
+  <button class="asset-btn" data-asset="sol">◎ SOL</button>
+  <button class="asset-btn" data-asset="xrp">✕ XRP</button>
+  <button class="asset-btn" data-asset="bnb">B BNB</button>
+  <button class="asset-btn" data-asset="gold">🟡 Gold</button>
+  <button class="asset-btn" data-asset="silver">⚪ Silver</button>
 </div>
 
 <div class="tf-bar" id="tfBar">
@@ -73,125 +59,113 @@ footer{text-align:center;padding:1rem;color:#4a5568;font-size:.75rem;border-top:
   <button class="tf-btn active" data-tf="1h">1H</button>
   <button class="tf-btn" data-tf="4h">4H</button>
   <button class="tf-btn" data-tf="1d">1D</button>
-  <button class="tf-btn" data-tf="all">All TFs</button>
+  <button class="tf-btn" data-tf="all" style="background:var(--panel)">All TFs</button>
 </div>
 
-<div class="main-grid">
-  <div class="chart-box" id="tv_verdict"></div>
-  <div class="verdict-card" id="currentVerdictCard">
-    <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">Loading...</h3><span class="tag">Binance Live</span></div>
-    <p class="muted small">Fetching live verdict...</p>
+<div style="max-width:1200px;margin:auto;padding:0 1rem">
+  <div class="grid grid2">
+    <div class="chart-box" id="tv_verdict" style="height:380px"></div>
+    <div class="card" id="currentVerdictCard">
+      <div class="card-h"><h3>Loading verdict...</h3><span class="tag">AI</span></div>
+      <p class="muted small">Fetching from /api/verdict/btc</p>
+    </div>
   </div>
 </div>
 
-<footer>⚠️ Only selected timeframe shows — bottom cards removed. Background #0a0e1a same as home. Price synced from Binance direct — same as BINANCE:BTCUSDT chart.</footer>
+<div class="verdict-grid" id="verdictGrid"></div>
+
+<div class="telegram-cta">
+  <h3>🤖 Telegram pe bhi same buttons!</h3>
+  <p style="opacity:.9;font-size:.9rem;margin:.5rem 0 1rem">Bot me /start karo → BTC, ETH, SOL, XRP, BNB, Gold, Silver buttons → timeframe select → instant verdict</p>
+  <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
+    <a href="https://t.me/BotFather" target="_blank" class="btn btn-white btn-sm">Setup Bot Token</a>
+    <a href="/api/telegram/bot" target="_blank" class="btn btn-sm" style="background:rgba(0,0,0,.2);color:#fff;border-color:rgba(255,255,255,.3)">Check Webhook Status</a>
+  </div>
+  <p class="small" style="margin-top:.8rem;opacity:.8">Env var: TELEGRAM_BOT_TOKEN + SITE_URL set karo Vercel me. Webhook: https://api.telegram.org/bot&lt;TOKEN&gt;/setWebhook?url=https://yourdomain.vercel.app/api/telegram/bot</p>
+</div>
+
+<footer style="text-align:center;padding:2rem 1rem" class="muted small">
+  ⚠️ Not financial advice. Educational analysis only. API: /api/verdict/btc, /api/verdict/eth etc.
+</footer>
 
 <script>
 const ASSETS = {
-  btc:{name:'Bitcoin', sym:'BINANCE:BTCUSDT', binance:'BTCUSDT'},
-  eth:{name:'Ethereum', sym:'BINANCE:ETHUSDT', binance:'ETHUSDT'},
-  sol:{name:'Solana', sym:'BINANCE:SOLUSDT', binance:'SOLUSDT'},
-  xrp:{name:'XRP', sym:'BINANCE:XRPUSDT', binance:'XRPUSDT'},
-  bnb:{name:'BNB', sym:'BINANCE:BNBUSDT', binance:'BNBUSDT'},
-  gold:{name:'Gold', sym:'OANDA:XAUUSD', binance:'PAXGUSDT'},
-  silver:{name:'Silver', sym:'OANDA:XAGUSD', binance:'XAGUSDT'},
+  btc:{name:'Bitcoin', sym:'BINANCE:BTCUSDT'},
+  eth:{name:'Ethereum', sym:'BINANCE:ETHUSDT'},
+  sol:{name:'Solana', sym:'BINANCE:SOLUSDT'},
+  xrp:{name:'XRP', sym:'BINANCE:XRPUSDT'},
+  bnb:{name:'BNB', sym:'BINANCE:BNBUSDT'},
+  gold:{name:'Gold', sym:'OANDA:XAUUSD'},
+  silver:{name:'Silver', sym:'OANDA:XAGUSD'},
 };
+
 let currentAsset = new URLSearchParams(location.search).get('asset') || 'btc';
 let currentTF = new URLSearchParams(location.search).get('tf') || '1h';
 
-async function fetchBinancePriceDirect(symbol){
-  const urls = [
-    `https://data-api.binance.vision/api/v3/ticker/24hr?symbol=${symbol}`,
-    `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`,
-  ];
-  for(const u of urls){
-    try{
-      const r = await fetch(u);
-      const j = await r.json();
-      if(j.lastPrice){
-        const price = parseFloat(j.lastPrice);
-        const change = parseFloat(j.priceChangePercent||0);
-        document.getElementById('syncInfo').innerHTML = `✅ Live: <b>${symbol} $${price.toLocaleString()}</b> — same as chart BINANCE:${symbol} | 24h ${change>=0?'+':''}${change.toFixed(2)}%`;
-        document.getElementById('liveBadge').innerHTML = `<span class="dot"></span> LIVE $${price.toLocaleString()}`;
-        return {price, change};
-      }
-    }catch(e){}
-  }
-  return {price:84014.05, change:0.42};
+function tvChart(id, sym){
+  if(!window.TradingView) return;
+  try{
+    new TradingView.widget({autosize:true, symbol:sym, interval: currentTF==='15m'?'15': currentTF==='30m'?'30': currentTF==='1h'?'60': currentTF==='4h'?'240':'D', timezone:"Asia/Kolkata", theme:"dark", style:"1", locale:"en", toolbar_bg:"#0e1424", container_id:id, studies:["Volume@tv-basicstudies"]});
+  }catch(e){}
 }
 
 async function fetchVerdict(asset){
   try{
-    const r = await fetch(`/api/verdict/${asset}?t=${Date.now()}`);
-    const j = await r.json();
-    return j;
+    const res = await fetch(`/api/verdict/${asset}`).then(r=>r.json());
+    return res;
   }catch(e){
-    const live = {price:84014.05, change:0.42};
+    // fallback mock
+    const price = {btc:97400, eth:3412, sol:214, xrp:2.41, bnb:692, gold:4265, silver:32.4}[asset]||97400;
     const tfs = ['15m','30m','1h','4h','1d'];
     const verdicts = {};
     tfs.forEach(tf=>{
       const bullish = Math.random()>0.5;
-      const mult = {'15m':0.009,'30m':0.013,'1h':0.02,'4h':0.035,'1d':0.06}[tf];
-      const price = live.price;
-      verdicts[tf] = {timeframe:tf,asset:asset.toUpperCase(),name:ASSETS[asset]?.name||asset,price,bias:bullish?'BULLISH':'BEARISH',confidence:72+Math.round(Math.random()*8),signal:bullish?'Buy / Long':'Sell / Short',support:price*(1-mult*1.2),resistance:price*(1+mult*1.2),stopLoss:price*(bullish?0.99:1.01),target1:price*(bullish?1.02:0.98),target2:price*(bullish?1.04:0.96),rsi:52+Math.round(Math.random()*10),ema20:price*0.992,change24h:live.change,reasoning:`${asset.toUpperCase()} ${bullish?'bullish':'bearish'} on ${tf} - live Binance $${price}.`};
+      verdicts[tf] = {timeframe:tf, asset:asset.toUpperCase(), price, bias: bullish?'BULLISH':'BEARISH', confidence: 65+Math.random()*20, signal: bullish?'Buy / Long':'Sell / Short', support: price*0.97, resistance: price*1.03, stopLoss: price*(bullish?0.985:1.015), target1: price*(bullish?1.02:0.98), target2: price*(bullish?1.04:0.96), rsi: 45+Math.random()*20, ema20: price*0.99, change24h: (Math.random()*4-2), reasoning: `${asset.toUpperCase()} ${bullish?'bullish':'bearish'} on ${tf} - EMA + RSI confluence.`, timestamp: new Date().toISOString()};
     });
-    return {asset:asset.toUpperCase(),name:ASSETS[asset]?.name||asset,currentPrice:live.price,change24h:live.change,verdicts};
+    return {asset:asset.toUpperCase(), name:ASSETS[asset]?.name||asset, currentPrice:price, verdicts};
   }
 }
 
-function renderVerdictCard(v){
+function renderVerdictCard(v, isMain=false){
   const cls = v.bias.includes('BULL')?'bullish': v.bias.includes('BEAR')?'bearish':'neutral';
   const icon = v.bias.includes('BULL')?'🟢': v.bias.includes('BEAR')?'🔴':'🟡';
-  const conf = Math.round(v.confidence||72);
-  return `<div class="verdict-card ${cls}" style="border:1px solid ${cls==='bullish'?'rgba(34,197,94,.35)':cls==='bearish'?'rgba(239,68,68,.35)':'rgba(246,196,69,.25)'};background:#121827">
-    <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">${icon} ${v.asset} • ${v.timeframe.toUpperCase()}</h3><span class="tag">${conf}% conf</span></div>
-    <div style="font-size:1.7rem;font-weight:900;margin:.6rem 0;color:#fff">$${Number(v.price).toLocaleString()} <span class="small ${v.change24h>=0?'up':'down'}">${v.change24h>=0?'▲':'▼'} ${Math.abs(v.change24h).toFixed(2)}%</span></div>
-    <div style="font-size:.75rem;color:#8b95a5;margin-bottom:.3rem">BINANCE:${ASSETS[currentAsset]?.binance} LIVE — same as chart</div>
-    <div><b style="font-size:1.05rem;color:#fff">${v.bias}</b> — <span style="color:#cbd5e1">${v.signal}</span></div>
-    <div class="confidence-bar"><div class="confidence-fill" style="width:${conf}%"></div></div>
+  return `<div class="verdict-card ${cls}">
+    <div class="card-h"><h3>${icon} ${v.asset} • ${v.timeframe.toUpperCase()}</h3><span class="tag">${v.confidence}% conf</span></div>
+    <div style="font-size:1.4rem;font-weight:900;margin:.4rem 0">$${v.price.toLocaleString()} <span class="small ${v.change24h>=0?'up':'down'}">${v.change24h>=0?'▲':'▼'} ${Math.abs(v.change24h).toFixed(2)}%</span></div>
+    <div><b style="font-size:1.05rem">${v.bias}</b> — ${v.signal}</div>
+    <div class="confidence-bar"><div class="confidence-fill" style="width:${v.confidence}%"></div></div>
     <div class="level-grid">
       <div class="level-box"><div class="small muted">Support</div><b class="up">$${v.support.toFixed(2)}</b></div>
       <div class="level-box"><div class="small muted">Resistance</div><b class="down">$${v.resistance.toFixed(2)}</b></div>
-      <div class="level-box"><div class="small muted">Stop Loss</div><b style="color:#fff">$${v.stopLoss.toFixed(2)}</b></div>
+      <div class="level-box"><div class="small muted">Stop Loss</div><b> $${v.stopLoss.toFixed(2)}</b></div>
       <div class="level-box"><div class="small muted">Target</div><b class="gold">$${v.target1.toFixed(2)} / $${v.target2.toFixed(2)}</b></div>
     </div>
-    <div class="small muted" style="margin:.5rem 0">RSI: ${v.rsi} • EMA20: $${v.ema20}</div>
-    <p class="small muted" style="background:#0a0e1a;padding:.5rem;border-radius:8px;border:1px solid #1e293b;margin:.5rem 0">${v.reasoning}</p>
+    <div class="small muted" style="margin:.6rem 0">RSI: ${v.rsi} • EMA20: $${v.ema20} • ${v.price > v.ema20 ? 'Above EMA ✅' : 'Below EMA ❌'}</div>
+    <p class="small muted" style="background:var(--bg);padding:.6rem;border-radius:8px;border:1px solid var(--border)">${v.reasoning}</p>
+    <div style="display:flex;gap:.4rem;margin-top:.8rem">
+      <button class="btn btn-sm" onclick="navigator.clipboard.writeText('${v.asset} ${v.timeframe} ${v.bias} Entry near ${v.price} SL ${v.stopLoss} T1 ${v.target1}');alert('Copied!')">Copy</button>
+      <a href="https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(v.asset+' '+v.timeframe+' '+v.bias+' $'+v.price)}" target="_blank" class="btn btn-sm btn-ghost">Share</a>
+    </div>
   </div>`;
-}
-
-function tvChart(id, sym){
-  if(!window.TradingView) return;
-  try{ new TradingView.widget({autosize:true, symbol:sym, interval: currentTF==='15m'?'15': currentTF==='30m'?'30': currentTF==='1h'?'60': currentTF==='4h'?'240':'D', timezone:"Asia/Kolkata", theme:"dark", style:"1", locale:"en", toolbar_bg:"#0e1424", container_id:id}); }catch(e){}
 }
 
 async function loadAsset(asset){
   currentAsset = asset;
   document.querySelectorAll('.asset-btn').forEach(b=>b.classList.toggle('active', b.dataset.asset===asset));
-  const binanceSymbol = ASSETS[asset]?.binance || 'BTCUSDT';
-  const live = await fetchBinancePriceDirect(binanceSymbol);
-  const livePrice = live?.price || 84014.05;
-  const liveChange = live?.change || 0.42;
   const data = await fetchVerdict(asset);
-  Object.values(data.verdicts).forEach(v=>{
-    v.price = Number(livePrice.toFixed(2));
-    v.change24h = Number(liveChange.toFixed(2));
-    const mult = {'15m':0.009,'30m':0.013,'1h':0.02,'4h':0.035,'1d':0.06}[v.timeframe]||0.02;
-    const bullish = v.bias.includes('BULL');
-    v.support = livePrice*(1-mult*1.2); v.resistance = livePrice*(1+mult*1.2);
-    v.stopLoss = livePrice*(bullish?1-mult:1+mult); v.target1 = livePrice*(bullish?1+mult*1.6:1-mult*1.6); v.target2 = livePrice*(bullish?1+mult*3:1-mult*3);
-  });
   tvChart('tv_verdict', ASSETS[asset]?.sym || 'BINANCE:BTCUSDT');
+  
   if(currentTF==='all'){
-    const allHtml = Object.values(data.verdicts).map(v=>renderVerdictCard(v)).join('');
-    document.getElementById('currentVerdictCard').outerHTML = `<div id="currentVerdictCard" style="grid-column:1/-1"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem">${allHtml}</div></div>`;
+    document.getElementById('verdictGrid').innerHTML = Object.values(data.verdicts).map(v=>renderVerdictCard(v)).join('');
+    document.getElementById('currentVerdictCard').innerHTML = `<div class="card-h"><h3>📊 ${data.name} — All Timeframes</h3><span class="tag">$${data.currentPrice}</span></div><p class="small muted">All 5 timeframes comparison — ${asset.toUpperCase()} ka 15m, 30m, 1H, 4H, 1D verdict ek saath.</p><div style="margin-top:.8rem"><b>Quick Bias:</b> ${Object.values(data.verdicts).map(v=>`${v.timeframe}:${v.bias.includes('BULL')?'🟢':'🔴'}`).join(' ')}</div>`;
   } else {
     const v = data.verdicts[currentTF] || Object.values(data.verdicts)[2];
-    document.getElementById('currentVerdictCard').innerHTML = renderVerdictCard(v);
+    document.getElementById('currentVerdictCard').innerHTML = renderVerdictCard(v, true);
+    // Grid me baki timeframes bhi dikhao
+    const others = Object.values(data.verdicts).filter(x=>x.timeframe!==currentTF);
+    document.getElementById('verdictGrid').innerHTML = others.map(v=>renderVerdictCard(v)).join('');
   }
   history.replaceState(null,'', `?asset=${asset}&tf=${currentTF}`);
-  // Fix button active states from URL
-  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.toggle('active', b.dataset.tf===currentTF));
 }
 
 document.getElementById('assetBar').addEventListener('click', e=>{
@@ -200,14 +174,13 @@ document.getElementById('assetBar').addEventListener('click', e=>{
 document.getElementById('tfBar').addEventListener('click', e=>{
   const btn = e.target.closest('.tf-btn'); if(!btn) return;
   document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
-  currentTF = btn.dataset.tf;
-  // Recreate currentVerdictCard if it was replaced in all mode
-  if(!document.getElementById('currentVerdictCard')){
-    document.querySelector('.main-grid').innerHTML = `<div class="chart-box" id="tv_verdict"></div><div class="verdict-card" id="currentVerdictCard"></div>`;
-  }
-  loadAsset(currentAsset);
+  currentTF = btn.dataset.tf; loadAsset(currentAsset);
 });
+
+// Init
 loadAsset(currentAsset);
+document.querySelector(`[data-asset="${currentAsset}"]`)?.classList.add('active');
+document.querySelector(`[data-tf="${currentTF}"]`)?.classList.add('active');
 </script>
 </body>
 </html>

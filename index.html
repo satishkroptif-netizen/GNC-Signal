@@ -3,83 +3,153 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GnC Verdict — Gold n Crypto Traders</title>
+<title>Gold n Crypto Traders — AI Trading Intelligence</title>
+<meta name="description" content="AI trade verdicts, macro pulse, daily brief and Telegram alerts — everything in one place.">
 <link rel="stylesheet" href="styles.css">
-<style>
-body{background:#0a0e1a;color:#fff;margin:0;font-family:Inter,system-ui,sans-serif}
-.nav{background:rgba(10,14,26,.9);backdrop-filter:blur(12px);border-bottom:1px solid #1e293b;position:sticky;top:0;z-index:100}
-.nav-inner{max-width:1200px;margin:auto;padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
-.logo{font-weight:900;text-decoration:none;color:#fff;font-size:1.15rem} .logo span{color:#f6c445}
-.nav-links{display:flex;gap:1.2rem;align-items:center}
-.nav-links a{color:#8b95a5;text-decoration:none;font-weight:600;font-size:.9rem}
-.nav-cta{display:flex;gap:.6rem;align-items:center}
-.btn-gold{background:linear-gradient(135deg,#f6c445,#e2a82a);color:#000;padding:.65rem 1.3rem;border-radius:10px;font-weight:900;text-decoration:none;font-size:.9rem;box-shadow:0 4px 15px rgba(246,196,69,.25)}
-.btn-ghost{color:#8b95a5;text-decoration:none;font-weight:600;font-size:.9rem;padding:.6rem 1rem}
-.hero-min{padding:6rem 1.5rem 2rem;text-align:center;max-width:900px;margin:auto}
-.hero-min h1{font-size:4.5rem;line-height:1;font-weight:900;letter-spacing:-.03em;margin:0;background:linear-gradient(135deg,#f6c445,#e2a82a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{color:#8b95a5;font-size:1.1rem;margin:1.2rem auto 2.5rem;max-width:650px;line-height:1.5}
-.btn-verdict{background:linear-gradient(135deg,#f6c445,#e2a82a);color:#000;border:none;padding:1.1rem 2.8rem;border-radius:12px;font-weight:900;font-size:1.15rem;cursor:pointer;box-shadow:0 10px 30px rgba(246,196,69,.35);text-decoration:none;display:inline-flex;align-items:center;gap:.5rem}
-.asset-preview{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin:2.5rem 0}
-.asset-preview span{background:#121827;border:1.5px solid rgba(246,196,69,.5);padding:.65rem 1.1rem;border-radius:50px;font-size:.88rem;font-weight:800;color:#f6c445;display:flex;flex-direction:column;align-items:center;gap:.15rem;min-width:85px}
-.asset-preview span small{font-size:.68rem;opacity:.9;color:#f6c445}
-.live-badge{display:inline-flex;align-items:center;gap:.6rem;background:rgba(34,197,94,.12);border:1.5px solid rgba(34,197,94,.4);color:#22c55e;padding:.7rem 1.3rem;border-radius:12px;font-weight:800;margin-top:1rem}
-.dot{width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse 1.5s infinite}
-@keyframes pulse{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
-.section{max-width:1000px;margin:auto;padding:3rem 1.5rem}
-.sec-title{text-align:center;font-size:2rem;font-weight:900;margin-bottom:2rem;color:#fff}
-.faq{max-width:800px;margin:auto} .faq details{background:#121827;border:1px solid #1e293b;border-radius:12px;padding:1.1rem 1.3rem;margin:.7rem 0}
-.faq summary{cursor:pointer;font-weight:700;color:#fff;list-style:none} .faq summary::-webkit-details-marker{display:none}
-.faq p{margin:.8rem 0 0;color:#8b95a5;line-height:1.6}
-footer{border-top:1px solid #1e293b;padding:2rem 1.5rem;text-align:center;color:#5b6577;font-size:.85rem}
-</style>
 </head>
 <body>
+
 <nav class="nav">
   <div class="nav-inner">
     <a href="index.html" class="logo">🪙 Gold n Crypto <span>Traders</span></a>
-    <div class="nav-links"><a href="#faq">FAQ</a></div>
-    <div class="nav-cta">
-      <a href="login.html" class="btn-ghost">Customer Login</a>
-      <a href="admin.html" class="btn-ghost">Admin Login</a>
-      <a href="verdict.html" class="btn-gold">Verdict</a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#macro">Macro Pulse</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
     </div>
+    <div class="nav-cta">
+      <a href="login.html" class="btn btn-ghost">Login</a>
+      <a href="#pricing" class="btn btn-gold">Start Free</a>
+    </div>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
   </div>
 </nav>
-<header class="hero-min">
-  <h1>GnC Verdict</h1>
-  <p class="hero-sub">BTC • ETH • SOL • XRP • BNB • Gold • Silver — 15m to 1D.</p>
-  <div style="margin:2rem 0"><a href="verdict.html" class="btn-verdict">🎯 Open Verdict Terminal →</a></div>
-  <div class="asset-preview">
-    <span><span style="display:flex;align-items:center;gap:4px"><span class="dot"></span>BTC</span><small>LIVE</small></span>
-    <span><span style="display:flex;align-items:center;gap:4px"><span class="dot"></span>ETH</span><small>LIVE</small></span>
-    <span><span style="display:flex;align-items:center;gap:4px"><span class="dot"></span>SOL</span><small>LIVE</small></span>
-    <span><span style="display:flex;align-items:center;gap:4px"><span class="dot"></span>XRP</span><small>LIVE</small></span>
-    <span><span style="display:flex;align-items:center;gap:4px"><span class="dot"></span>BNB</span><small>LIVE</small></span>
-    <span><span style="display:flex;align-items:center;gap:4px"><span class="dot"></span>Gold</span><small>LIVE</small></span>
-    <span><span style="display:flex;align-items:center;gap:4px"><span class="dot"></span>Silver</span><small>LIVE</small></span>
+
+<header class="hero">
+  <div class="hero-content">
+    <div class="badge">⚡ AI + Macro — One Platform</div>
+    <h1>Stop guessing.<br><span class="gold">Start trading smarter.</span></h1>
+    <p class="hero-sub">AI trade verdicts, live news, whale alerts <b>AND</b> global macro bias — from the Fed to funding rates, everything in one dashboard.</p>
+    <div class="hero-btns">
+      <a href="#pricing" class="btn btn-gold btn-lg">Start Free</a>
+      <a href="#macro" class="btn btn-outline btn-lg">See Macro Pulse</a>
+    </div>
+    <div class="hero-stats">
+      <div><b>31</b><span>Macro Factors</span></div>
+      <div><b>24/7</b><span>Telegram Alerts</span></div>
+      <div><b>Daily</b><span>AI Brief</span></div>
+    </div>
   </div>
-  <div><div class="live-badge"><span class="dot"></span><span id="homePrice">BTC $84,447 +1.24% LIVE</span></div></div>
 </header>
-<section id="faq" class="section">
-  <h2 class="sec-title">FAQ — Frequently Asked Questions</h2>
-  <div class="faq">
-    <details><summary>Kya Verdict real-time data use karta hai?</summary><p>Haan, live Binance market data 15m to 1D timeframes par update hota hai. Chart aur verdict ka price 100% same — direct Binance se.</p></details>
-    <details><summary>Kaunse assets ke liye verdict available hai?</summary><p>BTC, ETH, SOL, XRP, BNB ke saath Gold aur Silver bhi supported hain.</p></details>
-    <details><summary>Verdict Terminal open karne ke baad kya hota hai?</summary><p>Terminal me technical analysis, entry/exit signals, support/resistance, SL/targets turant dikhta hai.</p></details>
-      </div>
+
+<div class="ticker"><div class="ticker-track" id="tickerTrack"></div></div>
+
+<section id="features" class="section">
+  <h2 class="sec-title">Everything a <span class="gold">smart trader</span> needs</h2>
+  <div class="grid3">
+    <div class="card"><div class="icon">🤖</div><h3>AI Trade Verdicts</h3><p>Clear AI analysis on BTC, ETH and Gold — bias, key levels and reasoning.</p></div>
+    <div class="card"><div class="icon">🌍</div><h3>Macro Pulse</h3><p>One global macro bias dial — Fed, inflation, liquidity, all in a single score.</p></div>
+    <div class="card"><div class="icon">💬</div><h3>AI Copilot</h3><p>Ask in plain English — "What is today's BTC bias?" Get instant answers.</p></div>
+    <div class="card"><div class="icon">🐋</div><h3>Whale Alerts</h3><p>Instant Telegram alerts on big liquidations and whale moves.</p></div>
+    <div class="card"><div class="icon">📰</div><h3>Daily Pre-Market Brief</h3><p>Every morning at 8 AM — a 2-minute macro + crypto summary.</p></div>
+    <div class="card"><div class="icon">📊</div><h3>Paper Trading</h3><p>Test strategies with zero risk before going live.</p></div>
+  </div>
 </section>
-<footer><p><b>🪙 Gold n Crypto Traders</b> — GnC Verdict Terminal</p><p>© 2026 Gold n Crypto Traders</p></footer>
-<script>
-async function loadHomePrice(){
-  try{
-    const r = await fetch('https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BTCUSDT');
-    const j = await r.json();
-    if(j.lastPrice){
-      document.getElementById('homePrice').innerHTML = `BTC $${parseFloat(j.lastPrice).toLocaleString()} ${parseFloat(j.priceChangePercent)>=0?'▲':''} ${parseFloat(j.priceChangePercent).toFixed(2)}% LIVE`;
-    }
-  }catch(e){}
-}
-loadHomePrice();
-</script>
+
+<section id="macro" class="section section-dark">
+  <h2 class="sec-title">🌍 Macro Pulse <span class="tag">Demo preview</span></h2>
+  <p class="sec-sub">The real story behind the market — macro data at a glance.</p>
+  <div class="macro-wrap">
+    <div class="card dial-card">
+      <h3>Global Macro Market Bias</h3>
+      <div class="dial">
+        <svg viewBox="0 0 200 110" class="dial-svg">
+          <path d="M 15 100 A 85 85 0 0 1 185 100" fill="none" stroke="#1e293b" stroke-width="16" stroke-linecap="round"/>
+          <path d="M 15 100 A 85 85 0 0 1 185 100" fill="none" stroke="url(#gld)" stroke-width="16" stroke-linecap="round" stroke-dasharray="267" stroke-dashoffset="155"/>
+          <defs><linearGradient id="gld" x1="0" x2="1"><stop offset="0" stop-color="#ef4444"/><stop offset=".5" stop-color="#f5b942"/><stop offset="1" stop-color="#2dd4bf"/></linearGradient></defs>
+        </svg>
+        <div class="dial-value">42%</div>
+        <div class="dial-label">Mildly Bearish</div>
+      </div>
+      <p class="muted">Weighted score across 31 macro factors. Above 55 = tailwind for risk assets, below 45 = headwind.</p>
+    </div>
+    <div class="card">
+      <h3>Factor Status</h3>
+      <div class="factors">
+        <div class="factor"><span>Inflation</span><b class="bear">Bearish</b></div>
+        <div class="factor"><span>Fed Policy</span><b class="neut">Neutral</b></div>
+        <div class="factor"><span>Growth</span><b class="neut">Neutral</b></div>
+        <div class="factor"><span>Credit</span><b class="bear">Tight</b></div>
+        <div class="factor"><span>Liquidity</span><b class="bull">Improving</b></div>
+        <div class="factor"><span>Geopolitics</span><b class="bear">Risky</b></div>
+        <div class="factor"><span>Sentiment</span><b class="bull">Bullish</b></div>
+      </div>
+      <div class="beginner-box">
+        <label class="switch"><input type="checkbox" id="beginnerToggle"><span class="slider"></span></label>
+        <b>Beginner Mode</b>
+        <p id="beginnerText" class="hidden">In simple words: the Fed held rates steady, which is good news for markets. Liquidity is improving, which supports crypto.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" class="section">
+  <h2 class="sec-title">Start free. <span class="gold">Upgrade when it pays for itself.</span></h2>
+  <p class="sec-sub">One token pool — spend it on AI signals, macro reports, Copilot, everything.</p>
+  <div class="grid3 pricing">
+    <div class="card price">
+      <h3>Free</h3><div class="amount">₹0</div><p class="muted">Free forever</p>
+      <ul><li>20 trial tokens</li><li>Daily brief (3-day trial)</li><li>Macro pulse demo</li></ul>
+      <a href="login.html" class="btn btn-outline">Start Free</a>
+    </div>
+    <div class="card price">
+      <h3>Pro</h3><div class="amount">₹499<span>/month</span></div><p class="muted">Most popular start</p>
+      <ul><li>Daily AI pre-market brief</li><li>Telegram alerts channel</li><li>Full macro pulse access</li><li>AI Copilot (30 msgs/day)</li></ul>
+      <a href="#" class="btn btn-gold" onclick="alert('Add your Razorpay payment link here (see blueprint Day 11-14)');return false;">Join for ₹499</a>
+    </div>
+    <div class="card price">
+      <h3>VIP</h3><div class="amount">₹999<span>/month</span></div><p class="muted">For serious traders</p>
+      <ul><li>Everything in Pro</li><li>AI trade verdicts (BTC/ETH/Gold)</li><li>Whale + liquidation alerts</li><li>Weekly live Q&A session</li></ul>
+      <a href="#" class="btn btn-outline" onclick="alert('Add your Razorpay payment link here (see blueprint Day 11-14)');return false;">Go VIP</a>
+    </div>
+  </div>
+</section>
+
+<section class="section section-dark">
+  <h2 class="sec-title">What traders say</h2>
+  <div class="grid3">
+    <div class="card"><p>"The morning brief tells me the market mood in two minutes. Saves me an hour of research daily."</p><b>— Rohit, Delhi</b></div>
+    <div class="card"><p>"The macro dial is brilliant. Fed news finally makes sense with beginner mode on."</p><b>— Priya, Mumbai</b></div>
+    <div class="card"><p>"Telegram alerts arrive on time. No more guesswork — I trade with a system now."</p><b>— Aman, Jaipur</b></div>
+  </div>
+</section>
+
+<section id="faq" class="section">
+  <h2 class="sec-title">Questions & Answers</h2>
+  <div class="faq">
+    <details><summary>Is this financial advice?</summary><p>No. This is educational analysis and data. Trading involves risk — do your own research and trade at your own risk.</p></details>
+    <details><summary>How do I get Telegram alerts?</summary><p>After payment, you receive an invite link to our private Telegram channel. All alerts and the daily brief are posted there.</p></details>
+    <details><summary>What do I get in the free plan?</summary><p>20 trial tokens, a 3-day daily brief trial and the macro pulse demo — no card required.</p></details>
+    <details><summary>How do I cancel?</summary><p>Cancel anytime in one click. No lock-in, no hidden charges.</p></details>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>If not now, <span class="gold">then never!</span></h2>
+  <p>Start free. No card required.</p>
+  <a href="#pricing" class="btn btn-gold btn-lg">Start Free Now</a>
+</section>
+
+<footer>
+  <div class="foot-inner">
+    <div><b>🪙 Gold n Crypto Traders</b><p class="muted">AI + Macro trading intelligence</p></div>
+    <div class="socials"><a href="#">YouTube</a><a href="#">Instagram</a><a href="#">Telegram</a></div>
+  </div>
+  <p class="disclaimer">⚠️ <b>Risk Disclaimer:</b> Trading crypto and gold involves risk — you can lose money. This website is NOT financial advice, only educational analysis. Do your own research and never invest more than you can afford to lose.</p>
+  <p class="muted small">© 2026 Gold n Crypto Traders. All rights reserved.</p>
+</footer>
+
+<script src="app.js"></script>
 </body>
 </html>

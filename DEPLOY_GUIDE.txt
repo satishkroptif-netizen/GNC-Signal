@@ -1,0 +1,25 @@
+
+!!! FINAL DEPLOY STEPS - 1 MIN !!!
+
+Tera issue: api/Verdict (capital V) aur [asset].js root me tha, isliye V3 deploy nahi ho raha tha.
+
+Is zip me sahi structure hai (small v):
+api/verdict/[asset].js  <- V3 with FRED + ETHERSCAN + per-TF confidence
+
+Steps:
+1. Is zip ko extract kar
+2. GitHub repo gnc-signal.vercel.app khol
+3. Add file -> Upload files -> is zip ke andar ke saare files + folders ko drag-drop kar de
+   (GitHub puchega replace? -> Yes, replace all)
+4. Commit
+5. Vercel -> Deployments -> Redeploy (cache UNCHECK - bahut important!)
+6. 1 min baad check:
+   https://gnc-signal.vercel.app/api/verdict/btc
+   - keysStatus me fred: active - DXY ... aur etherscan: active dikhna chahiye
+   - verdicts.15m.confidence, verdicts.1h.confidence, verdicts.1d.confidence alag alag hone chahiye
+   - reasoning me [15M ANALYSIS - Score ... Confidence ...] + Macro DXY + Whale details
+
+Agar ab bhi "BTC bearish on 1h - live Binance..." dikhe to Vercel logs check kar - Build Failed hoga.
+Logs me agar FRED error aaye to key check kar, par code bina key ke bhi chalega.
+
+FRED_API_KEY aur ETHERSCAN_API_KEY tu already Vercel env me daal chuka hai - V3 unko auto use karega!
