@@ -280,80 +280,174 @@ export default async function handler(req, res){
     const t1 = bias.includes('BULL') ? price * (1 + mult*1.6) : price * (1 - mult*1.6);
     const t2 = bias.includes('BULL') ? price * (1 + mult*3) : price * (1 - mult*3);
 
-    // ====== DETAILED REASONING ======
-    let reasoningParts = [];
+    // ====== DETAILED REASONING (Structured Boxes) ======
+    let reasoningBoxes = [];
 
-    // Technical Analysis
-    let techReason = `📊 Technical: ${price > ema20 ? 'Price above EMA20' : 'Price below EMA20'} ($${ema20.toFixed(2)})`;
-    if(ema20 > ema50) techReason += ', EMA20 > EMA50 (uptrend)';
-    else techReason += ', EMA20 < EMA50 (downtrend)';
-    techReason += `. RSI at ${rsi14.toFixed(0)}${rsi14 > 70 ? ' (overbought)' : rsi14 < 30 ? ' (oversold)' : ' (neutral)'}`;
-    reasoningParts.push(techReason);
+    // Technical Analysis Box
+    let techStatus = price > ema20 ? 'Price above EMA20' : 'Price below EMA20';
+    let trendStatus = ema20 > ema50 ? 'EMA20 > EMA50 (uptrend)' : 'EMA20 < EMA50 (downtrend)';
+    let rsiStatus = rsi14 > 70 ? 'overbought' : rsi14 < 30 ? 'oversold' : 'neutral';
+    reasoningBoxes.push({
+      title: '📊 Technical Analysis',
+      data: [
+        `${techStatus} ($${ema20.toFixed(2)})`,
+        trendStatus,
+        `RSI at ${rsi14.toFixed(0)} (${rsiStatus})`
+      ],
+      sentiment: price > ema20 && ema20 > ema50 ? 'bullish' : price < ema20 && ema20 < ema50 ? 'bearish' : 'neutral'
+    });
 
-    // Open Interest
-    let oiReason = `📈 Open Interest: $${(openInterest.value/1e9).toFixed(2)}B (${openInterest.change24h > 0 ? '+' : ''}${openInterest.change24h.toFixed(1)}% 24h)`;
-    if(openInterest.change24h > 5) oiReason += ' - Rising OI with price suggests strong trend continuation';
-    else if(openInterest.change24h < -5) oiReason += ' - Falling OI indicates position unwinding, weakening trend';
-    else oiReason += ' - Stable OI, consolidation phase';
-    reasoningParts.push(oiReason);
+    // Open Interest Box
+    let oiInterpretation = '';
+    if(openInterest.change24h > 5) oiInterpretation = 'Rising OI with price suggests strong trend continuation';
+    else if(openInterest.change24h < -5) oiInterpretation = 'Falling OI indicates position unwinding, weakening trend';
+    else oiInterpretation = 'Stable OI, consolidation phase';
+    reasoningBoxes.push({
+      title: '📈 Open Interest',
+      data: [
+        `Value: $${(openInterest.value/1e9).toFixed(2)}B`,
+        `24h Change: ${openInterest.change24h > 0 ? '+' : ''}${openInterest.change24h.toFixed(1)}%`,
+        oiInterpretation
+      ],
+      sentiment: openInterest.change24h > 5 ? 'bullish' : openInterest.change24h < -5 ? 'bearish' : 'neutral'
+    });
 
-    // Long/Short Ratio
-    let lsReason = `⚖️ Long/Short Ratio: ${longShortRatio.value.toFixed(2)}`;
-    if(longShortRatio.value > 0.65) lsReason += ' - Market overleveraged long, risk of long squeeze';
-    else if(longShortRatio.value < 0.45) lsReason += ' - Excessive shorts, potential short squeeze setup';
-    else lsReason += ' - Balanced positioning, no extreme leverage';
-    reasoningParts.push(lsReason);
+    // Long/Short Ratio Box
+    let lsInterpretation = '';
+    if(longShortRatio.value > 0.65) lsInterpretation = 'Market overleveraged long, risk of long squeeze';
+    else if(longShortRatio.value < 0.45) lsInterpretation = 'Excessive shorts, potential short squeeze setup';
+    else lsInterpretation = 'Balanced positioning, no extreme leverage';
+    reasoningBoxes.push({
+      title: '⚖️ Long/Short Ratio',
+      data: [
+        `Ratio: ${longShortRatio.value.toFixed(2)}`,
+        `Accounts: ${longShortRatio.accounts.toFixed(2)}`,
+        lsInterpretation
+      ],
+      sentiment: longShortRatio.value > 0.65 ? 'bearish' : longShortRatio.value < 0.45 ? 'bullish' : 'neutral'
+    });
 
-    // Liquidations
-    let liqReason = `💥 Liquidations (24h): Longs $${liquidations.longs.toFixed(0)}M | Shorts $${liquidations.shorts.toFixed(0)}M`;
-    if(liquidations.longs > liquidations.shorts * 1.5) liqReason += ' - Heavy long liquidations may have cleared weak hands, bullish';
-    else if(liquidations.shorts > liquidations.longs * 1.5) liqReason += ' - Heavy short liquidations, bears covering, bearish reversal risk';
-    else liqReason += ' - Balanced liquidations, normal market activity';
-    reasoningParts.push(liqReason);
+    // Liquidations Box
+    let liqInterpretation = '';
+    if(liquidations.longs > liquidations.shorts * 1.5) liqInterpretation = 'Heavy long liquidations cleared weak hands, potentially bullish';
+    else if(liquidations.shorts > liquidations.longs * 1.5) liqInterpretation = 'Heavy short liquidations, bears covering, reversal risk';
+    else liqInterpretation = 'Balanced liquidations, normal market activity';
+    reasoningBoxes.push({
+      title: '💥 Liquidations (24h)',
+      data: [
+        `Longs: $${liquidations.longs.toFixed(0)}M`,
+        `Shorts: $${liquidations.shorts.toFixed(0)}M`,
+        liqInterpretation
+      ],
+      sentiment: liquidations.longs > liquidations.shorts * 1.5 ? 'bullish' : liquidations.shorts > liquidations.longs * 1.5 ? 'bearish' : 'neutral'
+    });
 
-    // Fear & Greed
-    let fgReason = `😨 Fear & Greed Index: ${fearGreedIndex.toFixed(0)}/100`;
-    if(fearGreedIndex > 75) fgReason += ' (Extreme Greed) - Market overheated, correction risk high';
-    else if(fearGreedIndex > 55) fgReason += ' (Greed) - Bullish sentiment, but watch for excess';
-    else if(fearGreedIndex < 25) fgReason += ' (Extreme Fear) - Capitulation zone, contrarian buy opportunity';
-    else if(fearGreedIndex < 45) fgReason += ' (Fear) - Cautious sentiment, potential for reversal';
-    else fgReason += ' (Neutral) - Balanced market psychology';
-    reasoningParts.push(fgReason);
+    // Fear & Greed Box
+    let fgLevel = '';
+    let fgInterpretation = '';
+    if(fearGreedIndex > 75) {
+      fgLevel = 'Extreme Greed';
+      fgInterpretation = 'Market overheated, correction risk high';
+    } else if(fearGreedIndex > 55) {
+      fgLevel = 'Greed';
+      fgInterpretation = 'Bullish sentiment, but watch for excess';
+    } else if(fearGreedIndex < 25) {
+      fgLevel = 'Extreme Fear';
+      fgInterpretation = 'Capitulation zone, contrarian buy opportunity';
+    } else if(fearGreedIndex < 45) {
+      fgLevel = 'Fear';
+      fgInterpretation = 'Cautious sentiment, potential for reversal';
+    } else {
+      fgLevel = 'Neutral';
+      fgInterpretation = 'Balanced market psychology';
+    }
+    reasoningBoxes.push({
+      title: '😨 Fear & Greed Index',
+      data: [
+        `Index: ${fearGreedIndex.toFixed(0)}/100`,
+        `Level: ${fgLevel}`,
+        fgInterpretation
+      ],
+      sentiment: fearGreedIndex > 75 ? 'bearish' : fearGreedIndex < 25 ? 'bullish' : 'neutral'
+    });
 
-    // Taker Buy/Sell Flow
-    let flowReason = `💸 Taker Flow: ${(takerFlow.ratio*100).toFixed(0)}% Buy / ${((1-takerFlow.ratio)*100).toFixed(0)}% Sell`;
-    if(takerFlow.ratio > 0.58) flowReason += ' - Strong buying pressure from aggressive market takers';
-    else if(takerFlow.ratio < 0.42) flowReason += ' - Aggressive selling, takers hitting bids';
-    else flowReason += ' - Balanced order flow, no directional dominance';
-    reasoningParts.push(flowReason);
+    // Taker Flow Box
+    let flowInterpretation = '';
+    if(takerFlow.ratio > 0.58) flowInterpretation = 'Strong buying pressure from aggressive market takers';
+    else if(takerFlow.ratio < 0.42) flowInterpretation = 'Aggressive selling, takers hitting bids';
+    else flowInterpretation = 'Balanced order flow, no directional dominance';
+    reasoningBoxes.push({
+      title: '💸 Taker Buy/Sell Flow',
+      data: [
+        `Buy: ${(takerFlow.ratio*100).toFixed(0)}%`,
+        `Sell: ${((1-takerFlow.ratio)*100).toFixed(0)}%`,
+        flowInterpretation
+      ],
+      sentiment: takerFlow.ratio > 0.58 ? 'bullish' : takerFlow.ratio < 0.42 ? 'bearish' : 'neutral'
+    });
 
-    // News Sentiment
-    let newsReason = `📰 News Sentiment: ${newsSentiment.score > 0.3 ? 'Positive' : newsSentiment.score < -0.3 ? 'Negative' : 'Neutral'} (${newsSentiment.articles} articles analyzed)`;
-    if(Math.abs(newsSentiment.score) > 0.5) newsReason += ' - Strong narrative impact on market sentiment';
-    reasoningParts.push(newsReason);
+    // News Sentiment Box
+    let newsSentimentLevel = newsSentiment.score > 0.3 ? 'Positive' : newsSentiment.score < -0.3 ? 'Negative' : 'Neutral';
+    let newsInterpretation = Math.abs(newsSentiment.score) > 0.5 ? 'Strong narrative impact on market sentiment' : 'Normal news flow';
+    reasoningBoxes.push({
+      title: '📰 News Sentiment',
+      data: [
+        `Sentiment: ${newsSentimentLevel}`,
+        `Articles Analyzed: ${newsSentiment.articles}`,
+        newsInterpretation
+      ],
+      sentiment: newsSentiment.score > 0.3 ? 'bullish' : newsSentiment.score < -0.3 ? 'bearish' : 'neutral'
+    });
 
-    // Whale Activity
-    let whaleReason = `🐋 Whale Activity: ${whaleActivity.largeTransactions} large transactions, Net flow: ${whaleActivity.netFlow > 0 ? '+' : ''}${whaleActivity.netFlow.toFixed(0)} ${meta.name}`;
-    if(whaleActivity.netFlow < -500) whaleReason += ' - Whales distributing, potential bearish signal';
-    else if(whaleActivity.netFlow > 500) whaleReason += ' - Whale accumulation detected, bullish long-term';
-    else whaleReason += ' - Neutral whale activity';
-    reasoningParts.push(whaleReason);
+    // Whale Activity Box
+    let whaleInterpretation = '';
+    if(whaleActivity.netFlow < -500) whaleInterpretation = 'Whales distributing, potential bearish signal';
+    else if(whaleActivity.netFlow > 500) whaleInterpretation = 'Whale accumulation detected, bullish long-term';
+    else whaleInterpretation = 'Neutral whale activity';
+    reasoningBoxes.push({
+      title: '🐋 Whale Activity',
+      data: [
+        `Large Transactions: ${whaleActivity.largeTransactions}`,
+        `Net Flow: ${whaleActivity.netFlow > 0 ? '+' : ''}${whaleActivity.netFlow.toFixed(0)} ${meta.name}`,
+        whaleInterpretation
+      ],
+      sentiment: whaleActivity.netFlow > 500 ? 'bullish' : whaleActivity.netFlow < -500 ? 'bearish' : 'neutral'
+    });
 
-    // Macro Factors
-    let macroReason = `🌍 Macro: DXY ${macroFactors.dxy.toFixed(2)}, Real Yields ${macroFactors.realYields.toFixed(2)}%, Fed ${macroFactors.fedPolicy}`;
-    if(macroFactors.dxy > 105) macroReason += ' - Strong dollar headwind for risk assets';
-    else if(macroFactors.dxy < 102) macroReason += ' - Weak dollar supportive for crypto';
-    if(macroFactors.fedPolicy === 'Dovish') macroReason += ', accommodative Fed policy bullish';
-    else if(macroFactors.fedPolicy === 'Hawkish') macroReason += ', tight Fed policy bearish';
-    reasoningParts.push(macroReason);
+    // Macro Factors Box
+    let macroInterpretation = '';
+    if(macroFactors.dxy > 105) macroInterpretation = 'Strong dollar headwind for risk assets';
+    else if(macroFactors.dxy < 102) macroInterpretation = 'Weak dollar supportive for crypto';
+    else macroInterpretation = 'Dollar neutral';
 
-    // Final verdict summary
-    let summaryReason = `\n\n🎯 ${tf.toUpperCase()} VERDICT: ${bias} with ${Math.round(conf)}% confidence. `;
-    summaryReason += `Composite score: ${compositeScore.toFixed(2)}. `;
-    summaryReason += `${meta.name} trading at $${price.toFixed(2)} (${change24h > 0 ? '+' : ''}${change24h.toFixed(2)}% 24h). `;
-    summaryReason += `Signal: ${sig}.`;
+    if(macroFactors.fedPolicy === 'Dovish') macroInterpretation += ', accommodative Fed policy bullish';
+    else if(macroFactors.fedPolicy === 'Hawkish') macroInterpretation += ', tight Fed policy bearish';
+    else macroInterpretation += ', neutral Fed stance';
 
-    const fullReasoning = reasoningParts.join('\n\n') + summaryReason;
+    reasoningBoxes.push({
+      title: '🌍 Macro Factors',
+      data: [
+        `DXY: ${macroFactors.dxy.toFixed(2)}`,
+        `Real Yields: ${macroFactors.realYields.toFixed(2)}%`,
+        `Fed Policy: ${macroFactors.fedPolicy}`,
+        macroInterpretation
+      ],
+      sentiment: (macroFactors.dxy < 102 && macroFactors.fedPolicy === 'Dovish') ? 'bullish' : (macroFactors.dxy > 105 && macroFactors.fedPolicy === 'Hawkish') ? 'bearish' : 'neutral'
+    });
+
+    // Verdict Summary Box
+    let verdictSummary = {
+      title: '🎯 Verdict Summary',
+      data: [
+        `Timeframe: ${tf.toUpperCase()}`,
+        `Bias: ${bias}`,
+        `Confidence: ${Math.round(conf)}%`,
+        `Composite Score: ${compositeScore.toFixed(2)}`,
+        `Signal: ${sig}`,
+        `Price: $${price.toFixed(2)} (${change24h > 0 ? '+' : ''}${change24h.toFixed(2)}% 24h)`
+      ],
+      sentiment: bias.includes('BULL') ? 'bullish' : bias.includes('BEAR') ? 'bearish' : 'neutral'
+    };
 
     verdicts[tf] = {
       timeframe: tf,
@@ -385,7 +479,8 @@ export default async function handler(req, res){
         macro: Number(macroScore.toFixed(2)),
         compositeScore: Number(compositeScore.toFixed(2))
       },
-      reasoning: fullReasoning,
+      reasoningBoxes: reasoningBoxes,
+      verdictSummary: verdictSummary,
       timestamp: new Date().toISOString(),
     };
   });
