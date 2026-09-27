@@ -151,18 +151,18 @@ function renderVerdictCard(v){
       const boxBorderColor = box.sentiment === 'bullish' ? 'rgba(34,197,94,.35)' :
                              box.sentiment === 'bearish' ? 'rgba(239,68,68,.35)' :
                              'rgba(246,196,69,.25)';
-      const dataHtml = box.data.map(d => `<div style="font-size:.72rem;color:#cbd5e1;margin:.25rem 0">• ${d}</div>`).join('');
-      return `<div style="background:#0a0e1a;padding:.6rem;border-radius:8px;border-left:3px solid ${boxBorderColor};margin:.5rem 0">
-        <div style="font-size:.8rem;font-weight:700;color:#f6c445;margin-bottom:.3rem">${box.title}</div>
+      const dataHtml = box.data.map(d => `<div style="font-size:.6rem;color:#cbd5e1;margin:.15rem 0;line-height:1.3">• ${d}</div>`).join('');
+      return `<div style="background:#0a0e1a;padding:.35rem .4rem;border-radius:6px;border-left:2px solid ${boxBorderColor};margin:.3rem 0">
+        <div style="font-size:.65rem;font-weight:700;color:#f6c445;margin-bottom:.2rem">${box.title}</div>
         ${dataHtml}
       </div>`;
     }).join('');
 
     // Add verdict summary if available
     if(v.verdictSummary){
-      const summaryHtml = v.verdictSummary.data.map(d => `<div style="font-size:.75rem;color:#fff;margin:.25rem 0">• ${d}</div>`).join('');
-      reasoningHtml += `<div style="background:#0a0e1a;padding:.7rem;border-radius:8px;border:2px solid #f6c445;margin:.5rem 0">
-        <div style="font-size:.85rem;font-weight:800;color:#f6c445;margin-bottom:.4rem">${v.verdictSummary.title}</div>
+      const summaryHtml = v.verdictSummary.data.map(d => `<div style="font-size:.62rem;color:#fff;margin:.15rem 0;line-height:1.3">• ${d}</div>`).join('');
+      reasoningHtml += `<div style="background:#0a0e1a;padding:.4rem;border-radius:6px;border:1.5px solid #f6c445;margin:.3rem 0">
+        <div style="font-size:.68rem;font-weight:800;color:#f6c445;margin-bottom:.25rem">${v.verdictSummary.title}</div>
         ${summaryHtml}
       </div>`;
     }
