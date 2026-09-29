@@ -1,0 +1,36 @@
+<!-- Auth Modal -->
+<div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:var(--card);border:1px solid #1e293b;border-radius:18px;padding:2rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h2 style="margin:0;font-size:1.4rem">🔐 Verify to Continue</h2>
+      <button onclick="hideAuthModal()" style="background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer">&times;</button>
+    </div>
+
+    <!-- Signup Step -->
+    <div id="signupStep">
+      <p class="muted" style="margin-bottom:1rem">Sign up with your email to view all timeframe verdicts. We'll send you a verification code.</p>
+      <form id="signupForm">
+        <input id="signupName" type="text" placeholder="Your Name" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:var(--txt);border:1px solid #2a3554">
+        <input id="signupEmail" type="email" placeholder="Email Address" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:var(--txt);border:1px solid #2a3554">
+        <input id="signupPhone" type="tel" placeholder="Phone Number (10 digits)" pattern="[0-9]{10}" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:var(--txt);border:1px solid #2a3554">
+        <button class="btn btn-gold" type="submit" style="width:100%;margin-top:1rem">Send Verification Code</button>
+      </form>
+      <p class="muted small" style="margin-top:1rem;text-align:center">By signing up, you agree to receive trading signals via email.</p>
+    </div>
+
+    <!-- OTP Step -->
+    <div id="otpStep" style="display:none">
+      <p class="muted" style="margin-bottom:1rem">Enter the 6-digit code sent to your email.</p>
+      <form id="otpForm">
+        <input id="otpCode" type="text" placeholder="Enter 6-digit OTP" maxlength="6" pattern="[0-9]{6}" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:var(--txt);border:1px solid #2a3554;font-size:1.5rem;text-align:center;letter-spacing:.5rem">
+        <button class="btn btn-gold" type="submit" style="width:100%;margin-top:1rem">Verify & Continue</button>
+      </form>
+      <p style="text-align:center;margin-top:1rem">
+        <a href="#" id="resendOtp" class="muted small">Resend OTP</a>
+      </p>
+      <p style="text-align:center;margin-top:.5rem">
+        <a href="#" onclick="document.getElementById('otpStep').style.display='none';document.getElementById('signupStep').style.display='block'" class="muted small">← Back</a>
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Gold n Crypto Traders</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<nav class="nav"><div class="nav-inner">
+  <a href="index.html" class="logo">🪙 Gold n Crypto <span>Traders</span></a>
+</div></nav>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h2>Welcome back! 👋</h2>
+    <p class="muted">Log in to see your daily AI brief.</p>
+    <form onsubmit="handleAuth(event,'login')" style="margin-top:1.2rem">
+      <input id="authName" type="text" placeholder="Your name" required>
+      <input id="authPhone" type="tel" placeholder="Mobile number (10 digits)" pattern="[0-9]{10}" required>
+      <button class="btn btn-gold" type="submit">Login / Sign Up</button>
+    </form>
+    <p class="muted small" style="margin-top:1rem;text-align:center">OTP login arrives in Phase 2. This is a demo login.</p>
+    <p style="text-align:center;margin-top:.6rem"><a href="index.html" class="muted">← Back to home</a></p>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

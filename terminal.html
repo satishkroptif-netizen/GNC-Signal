@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal — Gold n Crypto | IITianMacro Clone</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://s3.tradingview.com/tv.js"></script>
+</head>
+<body>
+<div class="topbar">
+  <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+  <a class="logo" href="index.html">🪙 Gold n Crypto <span>Terminal</span></a>
+  <div class="top-ticker"><div class="ticker-track2" id="topTicker">Loading /api/live/quotes...</div></div>
+  <div class="top-actions">
+    <span class="tag">LIVE</span>
+    <a href="index.html" class="btn btn-ghost btn-sm">Landing</a>
+    <button class="btn btn-gold btn-sm" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-link" onclick="location.href='verdict.html'" style="background:linear-gradient(135deg,#f6c445,#e2a82a);color:#1a1400;font-weight:900;margin-bottom:.6rem"><span>🎯</span> Verdict Terminal</div>
+    <div class="sb-title">Overview</div>
+    <div class="sb-link active" data-view="dashboard"><span>◉</span> Dashboard</div>
+    <div class="sb-link" data-view="regime"><span>⚡</span> Regime / Bias</div>
+    <div class="sb-link" data-view="usdata"><span>🇺🇸</span> US Data</div>
+    <div class="sb-title">Assets • Live</div>
+    <div class="sb-link" data-view="asset/btc"><span>₿</span> BTC</div>
+    <div class="sb-link" data-view="asset/eth"><span>Ξ</span> ETH</div>
+    <div class="sb-link" data-view="asset/sol"><span>◎</span> SOL</div>
+    <div class="sb-link" data-view="asset/gold"><span>🟡</span> Gold XAU</div>
+    <div class="sb-link" data-view="asset/xag"><span>⚪</span> Silver XAG</div>
+    <div class="sb-link" data-view="asset/nifty"><span>📈</span> Nifty</div>
+    <div class="sb-link" data-view="asset/bnf"><span>🏦</span> BankNifty</div>
+    <div class="sb-link" data-view="asset/spx"><span>🇺🇸</span> SPX</div>
+    <div class="sb-link" data-view="asset/dxy"><span>💵</span> DXY</div>
+    <div class="sb-link" data-view="asset/us10y"><span>📊</span> US10Y</div>
+    <div class="sb-link" data-view="asset/wti"><span>🛢️</span> WTI</div>
+    <div class="sb-title">Macro</div>
+    <div class="sb-link" data-view="fed"><span>🏛️</span> Fed</div>
+    <div class="sb-link" data-view="inflation"><span>🔥</span> Inflation</div>
+    <div class="sb-link" data-view="labour"><span>👷</span> Labour</div>
+    <div class="sb-link" data-view="gdp"><span>📦</span> GDP</div>
+    <div class="sb-link" data-view="calendar"><span>📅</span> Calendar</div>
+    <div class="sb-link" data-view="banking"><span>🏦</span> Banking</div>
+    <div class="sb-link" data-view="forex"><span>💱</span> Forex</div>
+    <div class="sb-title">Intelligence</div>
+    <div class="sb-link" data-view="alerts"><span>🚨</span> Alerts</div>
+    <div class="sb-link" data-view="reports"><span>📝</span> Reports</div>
+    <div class="sb-link" data-view="news"><span>📰</span> News</div>
+    <div class="sb-link" data-view="sentiment"><span>🧠</span> Sentiment</div>
+    <div class="sb-link" data-view="scanner"><span>🔍</span> Scanner</div>
+    <div class="sb-link" data-view="putcall"><span>⚖️</span> Put/Call</div>
+    <div class="sb-link" data-view="confluence"><span>🔗</span> Confluence</div>
+    <div class="sb-link" data-view="charts"><span>📊</span> Charts</div>
+    <div class="sb-title">Pro Tools</div>
+    <div class="sb-link" data-view="tradeai"><span>🤖</span> Trade AI</div>
+    <div class="card" style="margin:.8rem .2rem;padding:.7rem;background:linear-gradient(135deg,#1e293b,#0f172a)">
+      <div class="small muted">Plan: <b class="gold" id="planTag">Free</b></div>
+      <div class="small" style="margin:.3rem 0">Clone: iitianmacro.ai/terminal/*</div>
+      <div class="small muted">API: /api/live/quotes ✅</div>
+      <a href="https://t.me/" target="_blank" class="btn btn-gold" style="width:100%;margin-top:.5rem;font-size:.75rem">Join Telegram</a>
+    </div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+
+<script src="terminal.js"></script>
+</body>
+</html>
