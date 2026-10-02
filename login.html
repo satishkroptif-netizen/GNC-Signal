@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Gold n Crypto Traders</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .otp-section {
+      display: none;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #1e293b;
+    }
+    .otp-section.active {
+      display: block;
+    }
+    .otp-input {
+      width: 100%;
+      padding: .8rem;
+      margin: .5rem 0;
+      border-radius: 10px;
+      background: #0d1424;
+      color: var(--txt);
+      border: 1px solid #2a3554;
+      text-align: center;
+      font-size: 1.5rem;
+      letter-spacing: .5rem;
+    }
+    .otp-input:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+    .otp-timer {
+      color: var(--muted);
+      font-size: .8rem;
+      text-align: center;
+      margin-top: .5rem;
+    }
+    .otp-resend {
+      color: var(--gold);
+      background: none;
+      border: none;
+      font-size: .8rem;
+      cursor: pointer;
+      margin-top: .5rem;
+    }
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
+    .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #1e293b;
+    }
+    .step-dot.active {
+      background: var(--gold);
+    }
+    .step-dot.completed {
+      background: var(--green);
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav"><div class="nav-inner">
+    <a href="index.html" class="logo">🪙 Gold n Crypto <span>Traders</span></a>
+  </div></nav>
+
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Welcome! 👋</h2>
+      <p class="muted">Sign up or log in to access your AI trading brief.</p>
+
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step-dot active" id="step1Dot"></div>
+        <div class="step-dot" id="step2Dot"></div>
+        <div class="step-dot" id="step3Dot"></div>
+      </div>
+
+      <!-- Step 1: Email -->
+      <div id="step1">
+        <form onsubmit="handleStep1(event)" style="margin-top:1.2rem">
+          <input id="authName" type="text" placeholder="Your name" required>
+          <input id="authEmail" type="email" placeholder="Email address" required>
+          <input id="authPhone" type="tel" placeholder="Mobile number (10 digits)" pattern="[0-9]{10}" required>
+          <button class="btn btn-gold" type="submit">Send OTP</button>
+        </form>
+      </div>
+
+      <!-- Step 2: OTP Verification -->
+      <div id="step2" class="otp-section">
+        <p class="muted" style="text-align:center">Enter the 6-digit code sent to <span id="otpEmail" style="color:var(--gold)"></span></p>
+        <form onsubmit="handleStep2(event)">
+          <input id="otpCode" class="otp-input" type="text" placeholder="000000" maxlength="6" pattern="[0-9]{6}" required>
+          <button class="btn btn-gold" type="submit" style="width:100%">Verify OTP</button>
+        </form>
+        <p class="otp-timer">Code expires in: <span id="otpTimer">10:00</span></p>
+        <p style="text-align:center">
+          <button class="otp-resend" onclick="resendOtp()">Resend OTP</button>
+        </p>
+      </div>
+
+      <!-- Step 3: Success -->
+      <div id="step3" class="otp-section" style="text-align:center">
+        <div style="font-size:3rem;margin-bottom:1rem">✅</div>
+        <h3 style="color:var(--green)">Email Verified!</h3>
+        <p class="muted">Your account has been created successfully.</p>
+        <button class="btn btn-gold" onclick="window.location.href='index.html'" style="margin-top:1rem">Continue to Dashboard</button>
+      </div>
+
+      <p style="text-align:center;margin-top:.6rem"><a href="index.html" class="muted">← Back to home</a></p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    let currentStep = 1;
+    let otpExpiryTime = null;
+    let timerInterval = null;
+
+    function updateStep(step) {
+      currentStep = step;
+      document.getElementById('step1Dot').className = 'step-dot' + (step > 1 ? ' completed' : step === 1 ? ' active' : '');
+      document.getElementById('step2Dot').className = 'step-dot' + (step > 2 ? ' completed' : step === 2 ? ' active' : '');
+      document.getElementById('step3Dot').className = 'step-dot' + (step === 3 ? ' active' : '');
+
+      document.getElementById('step1').style.display = step === 1 ? 'block' : 'none';
+      document.getElementById('step2').className = 'otp-section' + (step === 2 ? ' active' : '');
+      document.getElementById('step3').className = 'otp-section' + (step === 3 ? ' active' : '');
+    }
+
+    async function handleStep1(e) {
+      e.preventDefault();
+      const name = document.getElementById('authName').value.trim();
+      const email = document.getElementById('authEmail').value.trim();
+      const phone = document.getElementById('authPhone').value.trim();
+
+      if (!name || !email || !phone) {
+        alert('Please fill all fields');
+        return;
+      }
+
+      // Show loading
+      const btn = e.target.querySelector('button');
+      btn.textContent = 'Sending OTP...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('otpEmail').textContent = email;
+          updateStep(2);
+          startOtpTimer();
+        } else {
+          alert(data.error || 'Failed to send OTP');
+        }
+      } catch (err) {
+        alert('Network error. Please try again.');
+      }
+
+      btn.textContent = 'Send OTP';
+      btn.disabled = false;
+    }
+
+    async function handleStep2(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value.trim();
+      const otp = document.getElementById('otpCode').value.trim();
+
+      if (!otp || otp.length !== 6) {
+        alert('Please enter a valid 6-digit OTP');
+        return;
+      }
+
+      const btn = e.target.querySelector('button');
+      btn.textContent = 'Verifying...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp }),
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          clearInterval(timerInterval);
+          updateStep(3);
+        } else {
+          alert(data.error || 'Invalid OTP');
+        }
+      } catch (err) {
+        alert('Network error. Please try again.');
+      }
+
+      btn.textContent = 'Verify OTP';
+      btn.disabled = false;
+    }
+
+    function startOtpTimer() {
+      otpExpiryTime = Date.now() + 10 * 60 * 1000; // 10 minutes
+      updateTimerDisplay();
+      timerInterval = setInterval(updateTimerDisplay, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const remaining = Math.max(0, otpExpiryTime - Date.now());
+      const minutes = Math.floor(remaining / 60000);
+      const seconds = Math.floor((remaining % 60000) / 1000);
+      document.getElementById('otpTimer').textContent =
+        `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+      if (remaining <= 0) {
+        clearInterval(timerInterval);
+        alert('OTP has expired. Please request a new one.');
+        updateStep(1);
+      }
+    }
+
+    function resendOtp() {
+      clearInterval(timerInterval);
+      updateStep(1);
+      // Auto-fill email
+      document.getElementById('authEmail').value = document.getElementById('otpEmail').textContent;
+    }
+  </script>
+</body>
+</html>
