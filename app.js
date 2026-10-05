@@ -31,7 +31,14 @@ function handleAuth(e, mode){
 function logout(){
   localStorage.removeItem('gnc_user');
   localStorage.removeItem('gnc_free_view');
+  localStorage.removeItem('gnc_free_view_used');
+  localStorage.removeItem('gnc_session');
   window.location.href = 'index.html';
+}
+
+function markLoggedOut() {
+  localStorage.removeItem('gnc_user');
+  localStorage.removeItem('gnc_session');
 }
 // Dashboard guard
 (function(){
