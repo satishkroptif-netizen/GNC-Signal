@@ -198,6 +198,12 @@
         const data = await res.json();
 
         if (data.success) {
+          localStorage.removeItem('gnc_free_view_used');
+          localStorage.setItem('gnc_user', JSON.stringify({
+            name: document.getElementById('authName').value.trim(),
+            email: document.getElementById('authEmail').value.trim(),
+            phone: document.getElementById('authPhone').value.trim()
+}));
           clearInterval(timerInterval);
           updateStep(3);
         } else {
