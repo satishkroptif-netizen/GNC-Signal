@@ -82,8 +82,8 @@ footer{text-align:center;padding:1rem;color:#4a5568;font-size:.75rem;border-top:
 </div>
 
 <!-- Auth Modal -->
-<div id="authModal">
-  <div class="modal-content">
+<div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#131c31;border:1px solid #1e293b;border-radius:18px;padding:2rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
       <h2 style="margin:0;font-size:1.4rem">🔐 Sign In to Continue</h2>
       <button onclick="hideAuthModal()" style="background:none;border:none;color:#8b95a5;font-size:1.5rem;cursor:pointer">&times;</button>
@@ -124,5 +124,10 @@ footer{text-align:center;padding:1rem;color:#4a5568;font-size:.75rem;border-top:
 
 <script type="module" src="verdict-core.js"></script>
 <script type="module" src="verdict-ui.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', function () {
+    if (typeof checkAuth === 'function') checkAuth();
+  });
+</script>
 </body>
 </html>
