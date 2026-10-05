@@ -140,4 +140,4 @@ Open locally from your computer/phone to send signals to your channel.
 - [ ] Glassnode/WhaleAlert for whale tracking
 - [ ] CME FedWatch for real Fed policy
 - [ ] Historical verdict tracking in dashboard
-- [ ] Mobile PWA support
+- [ ] Mobile PWA support# Force rebuild
