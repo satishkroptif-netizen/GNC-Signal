@@ -217,7 +217,7 @@ export function checkRateLimit(identifier: string, maxRequests = 30, windowMs = 
   return { allowed: true, remaining: maxRequests - record.count };
 }
 
-export function getClientIP(req: Request): string {
+export function getClientIP(req: Request | any): string {
   const forwarded = req.headers.get('x-forwarded-for');
   const realIP = req.headers.get('x-real-ip');
   return forwarded?.split(',')[0]?.trim() || realIP || 'unknown';

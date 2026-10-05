@@ -1,4 +1,4 @@
-import { validateSession, getUserFromToken, checkRateLimit, getClientIP } from '../../lib/supabase';
+import { validateSession, getUserFromToken, checkRateLimit, getClientIP } from './supabase';
 
 export interface AuthUser {
   id: string;
