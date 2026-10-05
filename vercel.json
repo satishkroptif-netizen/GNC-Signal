@@ -5,11 +5,6 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["bom1"],
-  "functions": {
-    "api/**/*.ts": {
-      "maxDuration": 30
-    }
-  },
   "headers": [
     {
       "source": "/api/(.*)",
