@@ -49,17 +49,21 @@
   }
 
   function renderUserInfo() {
-    var info = $('userInfo'), btn = $('authBtn');
+    var info = $('userInfo'), btn = $('authBtn'), loginBtn = $('loginBtn');
     var u = getSession();
-    if (u && info && btn) {
-      info.style.display = 'inline-flex';
-      info.innerHTML = '<span style="color:#e8edf5">Hi, ' + escapeHtml(u.name || u.email) + '</span>' +
-        ' <a href="#" id="logoutLink" style="color:#f6c445;text-decoration:underline">Logout</a>';
+    if (u && btn) {
+      if (info) {
+        info.style.display = 'inline-flex';
+        info.innerHTML = '<span style="color:#e8edf5">Hi, ' + escapeHtml(u.name || u.email) + '</span>' +
+          ' <a href="#" id="logoutLink" style="color:#f6c445;text-decoration:underline">Logout</a>';
+        var lo = $('logoutLink');
+        if (lo) lo.onclick = function (e) { e.preventDefault(); logout(); };
+      }
       btn.style.display = 'none';
-      var lo = $('logoutLink');
-      if (lo) lo.onclick = function (e) { e.preventDefault(); logout(); };
+      if (loginBtn) loginBtn.style.display = 'none';
     } else if (btn) {
       btn.style.display = '';
+      if (loginBtn) loginBtn.style.display = '';
       if (info) info.style.display = 'none';
     }
     // If a session exists, make sure the paywall isn't blocking
