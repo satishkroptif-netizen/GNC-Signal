@@ -86,8 +86,8 @@ footer{text-align:center;padding:1rem;color:#4a5568;font-size:.72rem;border-top:
     </div>
     <div style="overflow-x:auto">
       <table id="positionsTable">
-        <thead><tr><th>Asset</th><th>TF</th><th>Side</th><th>Entry</th><th>Stop</th><th>Target</th><th>Live</th><th>P&L %</th><th>Status</th></tr></thead>
-        <tbody id="positionsBody"><tr><td colspan="9" class="empty">Loading bot positions…</td></tr></tbody>
+        <thead><tr><th>Asset</th><th>TF</th><th>Side</th><th>Entry</th><th>Entry time</th><th>Stop</th><th>Target</th><th>Live</th><th>P&L %</th><th>Exit time</th><th>Status</th></tr></thead>
+        <tbody id="positionsBody"><tr><td colspan="11" class="empty">Loading bot positions…</td></tr></tbody>
       </table>
     </div>
     <div style="margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap">
@@ -240,11 +240,14 @@ async function takeTrades(){
       if (!side) continue;                       // NEUTRAL verdict -> no trade
       const key = a + '|' + tf;
       if (!signalKeyFresh(key, book)) continue;
+      const nowOpen = Date.now();
       book.positions.push({
         asset: a, tf, side,
         entry: v.price, sl: v.stopLoss, target: v.target1,
         conf: v.confidence, bias: v.bias,
-        openedAt: Date.now(), status: 'OPEN', result: null, pnl: null
+        entryTime: nowOpen,               // ✅ NEW: entry timestamp
+        exitTime: null,                   // ✅ NEW: set when SL/target hit
+        openedAt: nowOpen, status: 'OPEN', result: null, pnl: null
       });
       taken++;
     }
@@ -267,10 +270,12 @@ async function settle(book){
       const hitTgt = p.side === 'LONG' ? live >= p.target : live <= p.target;
       if (hitSL){
         p.status = 'LOSS'; p.closedAt = Date.now();
+        p.exitTime = Date.now();          // ✅ NEW: exit timestamp
         p.pnl = p.side === 'LONG' ? (p.sl/p.entry - 1) * 100 : (p.entry/p.sl - 1) * 100;
         p.pnl = -Math.abs(p.pnl);
       } else if (hitTgt){
         p.status = 'WIN'; p.closedAt = Date.now();
+        p.exitTime = Date.now();          // ✅ NEW: exit timestamp
         p.pnl = Math.abs(p.target/p.entry - 1) * 100;
       } else {
         p.live = live;
@@ -299,6 +304,18 @@ function fmt(p){
   return '$' + Number(p).toLocaleString(undefined,{maximumFractionDigits:2});
 }
 
+// ✅ NEW: IST date-time formatter for entry/exit columns
+function fmtTime(ts){
+  if (!ts) return '—';
+  try {
+    return new Date(ts).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit', month: 'short',
+      hour: '2-digit', minute: '2-digit', hour12: true
+    });
+  } catch(e){ return '—'; }
+}
+
 function render(book){
   // stats
   const closed = book.positions.filter(p => p.status !== 'OPEN');
@@ -320,7 +337,7 @@ function render(book){
   const rows = book.positions.slice().reverse().filter(p => filterTF === 'all' || p.tf === filterTF);
   const tbody = document.getElementById('positionsBody');
   if (!rows.length){
-    tbody.innerHTML = '<tr><td colspan="9" class="empty">No signals yet — the bot opens a virtual trade on every new verdict. Press Refresh.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="empty">No signals yet — the bot opens a virtual trade on every new verdict. Press Refresh.</td></tr>';
   } else {
     tbody.innerHTML = rows.map(p => {
       const cls = p.status === 'WIN' ? 'up' : p.status === 'LOSS' ? 'down' : '';
@@ -331,10 +348,12 @@ function render(book){
         '<td>' + p.tf.toUpperCase() + '</td>' +
         '<td><span class="bias-pill ' + pill + '">' + p.side + '</span></td>' +
         '<td>' + fmt(p.entry) + '</td>' +
+        '<td class="small muted">' + fmtTime(p.entryTime || p.openedAt) + '</td>' +
         '<td class="down">' + fmt(p.sl) + '</td>' +
         '<td class="up">' + fmt(p.target) + '</td>' +
         '<td>' + fmt(p.live) + '</td>' +
         '<td class="' + cls + '">' + (p.pnl != null ? ((p.pnl>=0?'+':'') + p.pnl.toFixed(2) + '%') : '—') + '</td>' +
+        '<td class="small muted">' + fmtTime(p.exitTime) + '</td>' +
         '<td class="small ' + cls + '">' + statusTxt + '</td>' +
       '</tr>';
     }).join('');

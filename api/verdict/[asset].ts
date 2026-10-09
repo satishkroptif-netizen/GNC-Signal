@@ -1,6 +1,8 @@
-import { getAsset, getAllAssetsForUI, formatPrice, ASSET_KEYS } from '../lib/assets';
-import { fetchAllMarketData } from '../lib/market-data';
-import { checkRateLimit, getClientIP } from '../lib/supabase';
+// ✅ FIX: was '../lib/...' — from api/verdict/ that resolves to api/lib/* (missing)
+// and crashes the function with MODULE_NOT_FOUND on every call.
+import { getAsset, getAllAssetsForUI, formatPrice, ASSET_KEYS } from '../../lib/assets';
+import { fetchAllMarketData } from '../../lib/market-data';
+import { checkRateLimit, getClientIP } from '../../lib/supabase';
 
 interface VerdictRequest {
   query: {
@@ -63,10 +65,11 @@ function calculateCompositeScore(
   // News Score
   const newsScore = Math.max(-0.8, Math.min(0.8, marketData.newsSentiment.score));
   
-  // Whale Score
+  // Whale Score — netFlow is in $M (real aggTrades ≥$100k window)
+  // ✅ FIX: thresholds were ±500 (old placeholder units) and could never trigger
   let whaleScore = 0;
-  if (marketData.whaleActivity.netFlow < -500) whaleScore = -0.5;
-  else if (marketData.whaleActivity.netFlow > 500) whaleScore = 0.5;
+  if (marketData.whaleActivity.netFlow < -2) whaleScore = -0.5;
+  else if (marketData.whaleActivity.netFlow > 2) whaleScore = 0.5;
   
   // Macro Score
   let macroScore = 0;
@@ -182,15 +185,15 @@ function buildReasoningBoxes(price: number, ema20: number, ema50: number, rsi14:
     sentiment: marketData.newsSentiment.score > 0.3 ? 'bullish' : marketData.newsSentiment.score < -0.3 ? 'bearish' : 'neutral',
   });
   
-  // Whale Activity
+  // Whale Activity — netFlow in $M, thresholds scaled to the real proxy window
   let whaleInterp = '';
-  if (marketData.whaleActivity.netFlow < -500) whaleInterp = 'Whales distributing, potential bearish signal';
-  else if (marketData.whaleActivity.netFlow > 500) whaleInterp = 'Whale accumulation detected, bullish long-term';
+  if (marketData.whaleActivity.netFlow < -2) whaleInterp = 'Whales distributing, potential bearish signal';
+  else if (marketData.whaleActivity.netFlow > 2) whaleInterp = 'Whale accumulation detected, bullish long-term';
   else whaleInterp = 'Neutral whale activity';
   boxes.push({
     title: '🐋 Whale Activity',
-    data: [`Large Transactions: ${marketData.whaleActivity.largeTransactions}`, `Net Flow: ${marketData.whaleActivity.netFlow > 0 ? '+' : ''}${marketData.whaleActivity.netFlow.toFixed(0)}`, whaleInterp],
-    sentiment: marketData.whaleActivity.netFlow > 500 ? 'bullish' : marketData.whaleActivity.netFlow < -500 ? 'bearish' : 'neutral',
+    data: [`Large Trades (≥$100k): ${marketData.whaleActivity.largeTransactions}`, `Net Flow: $${marketData.whaleActivity.netFlow > 0 ? '+' : ''}${marketData.whaleActivity.netFlow.toFixed(2)}M`, whaleInterp],
+    sentiment: marketData.whaleActivity.netFlow > 2 ? 'bullish' : marketData.whaleActivity.netFlow < -2 ? 'bearish' : 'neutral',
   });
   
   // Macro
@@ -321,12 +324,17 @@ export default async function handler(req: any, res: any) {
     const compositeScore = calculateCompositeScore(technicalScore, marketData, tf, change24h);
     const { bias, confidence, signal } = getBiasAndConfidence(compositeScore);
     const isBullish = bias.includes('BULL');
+    // ✅ FIX: NEUTRAL verdicts previously got bearish-biased levels (SL above
+    // price). For a "Wait / Range" signal, show both-side levels around price.
+    const isNeutral = !isBullish && !bias.includes('BEAR');
+    const dir = isNeutral ? 1 : (isBullish ? 1 : -1);
     
     const sup = price * (1 - mult * 1.2);
     const resis = price * (1 + mult * 1.2);
     const sl = isBullish ? price * (1 - mult) : price * (1 + mult);
-    const t1 = isBullish ? price * (1 + mult * 1.6) : price * (1 - mult * 1.6);
-    const t2 = isBullish ? price * (1 + mult * 3) : price * (1 - mult * 3);
+    // ✅ FIX: neutral verdicts now get symmetrical two-sided levels
+    const t1 = price * (1 + dir * mult * 1.6);
+    const t2 = price * (1 + dir * mult * 3);
     
     const reasoningBoxes = buildReasoningBoxes(price, ema20, ema50, rsi14, marketData, tf);
     
@@ -368,8 +376,13 @@ export default async function handler(req: any, res: any) {
         fearGreed: Number(((marketData.fearGreedIndex > 75 ? -0.6 : marketData.fearGreedIndex < 25 ? 0.6 : (marketData.fearGreedIndex - 50) / 50)).toFixed(2)),
         takerFlow: Number(((marketData.takerFlow.ratio - 0.5) * 2).toFixed(2)),
         newsSentiment: Number(Math.max(-0.8, Math.min(0.8, marketData.newsSentiment.score)).toFixed(2)),
-        whaleActivity: Number((marketData.whaleActivity.netFlow < -500 ? -0.5 : marketData.whaleActivity.netFlow > 500 ? 0.5 : 0).toFixed(2)),
-        macro: Number(marketData.macroFactors.dxy > 105 ? -0.4 : marketData.macroFactors.dxy < 102 ? 0.4 : 0).toFixed(2),
+        whaleActivity: Number((marketData.whaleActivity.netFlow < -2 ? -0.5 : marketData.whaleActivity.netFlow > 2 ? 0.5 : 0).toFixed(2)),
+        // inline macro score (same formula as calculateCompositeScore)
+        macro: Number((
+          (marketData.macroFactors.dxy > 105 ? -0.4 : marketData.macroFactors.dxy < 102 ? 0.4 : 0) +
+          (marketData.macroFactors.realYields > 2.3 ? -0.3 : marketData.macroFactors.realYields < 1.9 ? 0.3 : 0) +
+          (marketData.macroFactors.fedPolicy === 'Dovish' ? 0.5 : marketData.macroFactors.fedPolicy === 'Hawkish' ? -0.5 : 0)
+        ).toFixed(2)),
         compositeScore: Number(compositeScore.toFixed(2)),
       },
       reasoningBoxes,
