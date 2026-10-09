@@ -16,8 +16,13 @@ function calculateTechnicalScore(price: number, ema20: number, ema50: number, rs
   score += price > ema20 ? 1.2 : -1.2;
   // EMA20 vs EMA50
   score += ema20 > ema50 ? 0.9 : -0.9;
-  // RSI
-  score += (rsi14 - 50) / 25;
+  // RSI — momentum in the normal band, but FADED at extremes.
+  // ✅ FIX: previously RSI 90 scored MORE bullish than RSI 70 while the
+  // reasoning box called it "overbought" — score and story contradicted.
+  let rsiTerm = (rsi14 - 50) / 25;
+  if (rsi14 > 70) rsiTerm = 0.8 - (rsi14 - 70) * 0.06;   // fade overbought toward reversal
+  if (rsi14 < 30) rsiTerm = -0.8 - (rsi14 - 30) * 0.06;  // fade oversold toward bounce
+  score += rsiTerm;
   return score;
 }
 
@@ -25,7 +30,8 @@ function calculateCompositeScore(
   technicalScore: number,
   marketData: any,
   tf: string,
-  change24h: number
+  change24h: number,
+  assetKey: string
 ): number {
   // Timeframe weights
   const tfWeights: Record<string, any> = {
@@ -39,25 +45,42 @@ function calculateCompositeScore(
   const w = tfWeights[tf] || tfWeights['1h'];
   
   // Open Interest Score
+  // ✅ FIX: OI direction only means something WITH price direction.
+  // Rising OI + rising price = new longs (bullish). Rising OI + falling price
+  // = new shorts (bearish). Previously rising OI was always bullish.
   let oiScore = 0;
-  if (marketData.openInterest.change24h > 5) oiScore = 0.6;
-  else if (marketData.openInterest.change24h < -5) oiScore = -0.4;
-  
+  const oiChg = marketData.openInterest.change24h;
+  if (oiChg > 5 && change24h > 0) oiScore = 0.6;
+  else if (oiChg > 5 && change24h < 0) oiScore = -0.5;
+  else if (oiChg < -5) oiScore = -0.4;
+
   // Long/Short Ratio Score
+  // ✅ FIX: `value` is the raw RATIO (BTC ≈ 2.0, XRP ≈ 3.1 — always > 0.65),
+  // so the old code was bearish -0.5 on EVERY asset every day and the bullish
+  // branch could never fire. The 0.65/0.45 thresholds belong to the
+  // longAccount FRACTION (0–1). Contrarian: crowded longs = bearish risk.
   let lsScore = 0;
-  if (marketData.longShortRatio.value > 0.65) lsScore = -0.5;
-  else if (marketData.longShortRatio.value < 0.45) lsScore = 0.5;
-  
+  const longAcct = marketData.longShortRatio.accounts; // 0–1 fraction long
+  if (longAcct > 0.65) lsScore = -0.5;        // crowd heavily long → squeeze risk
+  else if (longAcct < 0.45) lsScore = 0.5;    // crowd heavily short → squeeze upside
+  else lsScore = (0.5 - longAcct) * 0.4;      // mild contrarian tilt in the normal band
+
   // Liquidations Score
   let liqScore = 0;
   if (marketData.liquidations.longs > marketData.liquidations.shorts * 1.5) liqScore = 0.4;
   else if (marketData.liquidations.shorts > marketData.liquidations.longs * 1.5) liqScore = -0.4;
-  
-  // Fear & Greed Score
+
+  // Fear & Greed Score (contrarian)
+  // ✅ FIX: old thresholds jumped from +0.5 at 75 to -0.6 at 76 — a 1.1 score
+  // discontinuity from a 1-point index move. Now continuous through the band.
+  // ✅ FIX 2: F&G is a CRYPTO index — must not move gold/silver verdicts.
+  const isCrypto = assetKey !== 'gold' && assetKey !== 'silver';
   let fgScore = 0;
-  if (marketData.fearGreedIndex > 75) fgScore = -0.6;
-  else if (marketData.fearGreedIndex < 25) fgScore = 0.6;
-  else fgScore = (marketData.fearGreedIndex - 50) / 50;
+  if (isCrypto) {
+    if (marketData.fearGreedIndex > 75) fgScore = -0.6;
+    else if (marketData.fearGreedIndex < 25) fgScore = 0.6;
+    else fgScore = (50 - marketData.fearGreedIndex) / 50;
+  }
   
   // Taker Flow Score
   const flowScore = (marketData.takerFlow.ratio - 0.5) * 2;
@@ -98,16 +121,21 @@ function calculateCompositeScore(
 }
 
 function getBiasAndConfidence(score: number): { bias: string; confidence: number; signal: string } {
-  if (score > 1.8) return { bias: 'STRONGLY BULLISH', confidence: 82 + Math.random() * 10, signal: 'Strong Buy / Long' };
-  if (score > 1.0) return { bias: 'BULLISH', confidence: 73 + Math.random() * 8, signal: 'Buy / Long' };
-  if (score > 0.4) return { bias: 'CAUTIOUSLY BULLISH', confidence: 64 + Math.random() * 7, signal: 'Buy on dip' };
-  if (score < -1.8) return { bias: 'STRONGLY BEARISH', confidence: 82 + Math.random() * 10, signal: 'Strong Sell / Short' };
-  if (score < -1.0) return { bias: 'BEARISH', confidence: 73 + Math.random() * 8, signal: 'Sell / Short' };
-  if (score < -0.4) return { bias: 'CAUTIOUSLY BEARISH', confidence: 64 + Math.random() * 7, signal: 'Sell on rise' };
-  return { bias: 'NEUTRAL / RANGE', confidence: 58, signal: 'Wait / Range' };
+  // ✅ FIX: confidence used Math.random() — the same market state showed a
+  // different confidence on every refresh. Now it's deterministic from |score|
+  // (distance beyond the neutral band = conviction).
+  const confBase = Math.min(95, 55 + Math.abs(score) * 12);
+  const confidence = Math.round(confBase);
+  if (score > 1.8) return { bias: 'STRONGLY BULLISH', confidence, signal: 'Strong Buy / Long' };
+  if (score > 1.0) return { bias: 'BULLISH', confidence: Math.min(confidence, 88), signal: 'Buy / Long' };
+  if (score > 0.4) return { bias: 'CAUTIOUSLY BULLISH', confidence: Math.min(confidence, 78), signal: 'Buy on dip' };
+  if (score < -1.8) return { bias: 'STRONGLY BEARISH', confidence, signal: 'Strong Sell / Short' };
+  if (score < -1.0) return { bias: 'BEARISH', confidence: Math.min(confidence, 88), signal: 'Sell / Short' };
+  if (score < -0.4) return { bias: 'CAUTIOUSLY BEARISH', confidence: Math.min(confidence, 78), signal: 'Sell on rise' };
+  return { bias: 'NEUTRAL / RANGE', confidence: Math.min(confidence, 60), signal: 'Wait / Range' };
 }
 
-function buildReasoningBoxes(price: number, ema20: number, ema50: number, rsi14: number, marketData: any, tf: string) {
+function buildReasoningBoxes(price: number, ema20: number, ema50: number, rsi14: number, marketData: any, tf: string, assetKey: string) {
   const boxes = [];
   
   // Technical
@@ -122,24 +150,28 @@ function buildReasoningBoxes(price: number, ema20: number, ema50: number, rsi14:
   
   // Open Interest
   let oiInterp = '';
-  if (marketData.openInterest.change24h > 5) oiInterp = 'Rising OI with price suggests strong trend continuation';
+  if (marketData.openInterest.change24h > 5) oiInterp = change24h > 0
+    ? 'Rising OI with rising price — new longs entering, trend continuation'
+    : 'Rising OI with falling price — new shorts entering, bearish pressure';
   else if (marketData.openInterest.change24h < -5) oiInterp = 'Falling OI indicates position unwinding, weakening trend';
   else oiInterp = 'Stable OI, consolidation phase';
   boxes.push({
     title: '📈 Open Interest',
     data: [`Value: $${(marketData.openInterest.value / 1e9).toFixed(2)}B`, `24h Change: ${marketData.openInterest.change24h > 0 ? '+' : ''}${marketData.openInterest.change24h.toFixed(1)}%`, oiInterp],
-    sentiment: marketData.openInterest.change24h > 5 ? 'bullish' : marketData.openInterest.change24h < -5 ? 'bearish' : 'neutral',
+    sentiment: marketData.openInterest.change24h > 5 ? (change24h > 0 ? 'bullish' : 'bearish') : marketData.openInterest.change24h < -5 ? 'bearish' : 'neutral',
   });
   
-  // Long/Short Ratio
+  // Long/Short Ratio — uses the longAccount FRACTION (0–1), not the raw ratio.
+  // ✅ FIX: raw ratio (BTC≈2.0, always > 0.65) made this box permanently bearish.
   let lsInterp = '';
-  if (marketData.longShortRatio.value > 0.65) lsInterp = 'Market overleveraged long, risk of long squeeze';
-  else if (marketData.longShortRatio.value < 0.45) lsInterp = 'Excessive shorts, potential short squeeze setup';
+  const longAcctFrac = marketData.longShortRatio.accounts;
+  if (longAcctFrac > 0.65) lsInterp = 'Market overleveraged long, risk of long squeeze';
+  else if (longAcctFrac < 0.45) lsInterp = 'Excessive shorts, potential short squeeze setup';
   else lsInterp = 'Balanced positioning, no extreme leverage';
   boxes.push({
     title: '⚖️ Long/Short Ratio',
-    data: [`Ratio: ${marketData.longShortRatio.value.toFixed(2)}`, `Accounts: ${marketData.longShortRatio.accounts.toFixed(2)}`, lsInterp],
-    sentiment: marketData.longShortRatio.value > 0.65 ? 'bearish' : marketData.longShortRatio.value < 0.45 ? 'bullish' : 'neutral',
+    data: [`Ratio: ${marketData.longShortRatio.value.toFixed(2)}`, `Longs (accounts): ${(longAcctFrac * 100).toFixed(1)}%`, lsInterp],
+    sentiment: longAcctFrac > 0.65 ? 'bearish' : longAcctFrac < 0.45 ? 'bullish' : 'neutral',
   });
   
   // Liquidations
@@ -154,16 +186,22 @@ function buildReasoningBoxes(price: number, ema20: number, ema50: number, rsi14:
   });
   
   // Fear & Greed
+  // ✅ FIX: F&G is a CRYPTO-ONLY index. Applying it to gold/silver produced
+  // nonsense factors (e.g. "Extreme Greed" shifting a silver verdict).
+  const isCrypto = assetKey !== 'gold' && assetKey !== 'silver';
   let fgLevel = '', fgInterp = '';
-  if (marketData.fearGreedIndex > 75) { fgLevel = 'Extreme Greed'; fgInterp = 'Market overheated, correction risk high'; }
+  if (!isCrypto) {
+    fgLevel = 'N/A (metals)';
+    fgInterp = 'Fear & Greed is a crypto sentiment index — not applied to metals';
+  } else if (marketData.fearGreedIndex > 75) { fgLevel = 'Extreme Greed'; fgInterp = 'Market overheated, correction risk high'; }
   else if (marketData.fearGreedIndex > 55) { fgLevel = 'Greed'; fgInterp = 'Bullish sentiment, but watch for excess'; }
   else if (marketData.fearGreedIndex < 25) { fgLevel = 'Extreme Fear'; fgInterp = 'Capitulation zone, contrarian buy opportunity'; }
   else if (marketData.fearGreedIndex < 45) { fgLevel = 'Fear'; fgInterp = 'Cautious sentiment, potential for reversal'; }
   else { fgLevel = 'Neutral'; fgInterp = 'Balanced market psychology'; }
   boxes.push({
     title: '😨 Fear & Greed Index',
-    data: [`Index: ${marketData.fearGreedIndex.toFixed(0)}/100`, `Level: ${fgLevel}`, fgInterp],
-    sentiment: marketData.fearGreedIndex > 75 ? 'bearish' : marketData.fearGreedIndex < 25 ? 'bullish' : 'neutral',
+    data: [`Index: ${isCrypto ? marketData.fearGreedIndex.toFixed(0) + '/100' : 'N/A'}`, `Level: ${fgLevel}`, fgInterp],
+    sentiment: !isCrypto ? 'neutral' : marketData.fearGreedIndex > 75 ? 'bearish' : marketData.fearGreedIndex < 25 ? 'bullish' : 'neutral',
   });
   
   // Taker Flow
@@ -236,6 +274,9 @@ export default async function handler(req: any, res: any) {
   }
   
   // Fetch live price (primary: Binance)
+  // ✅ FIX: silver (XAGUSDT) does NOT exist on Binance SPOT — the old code
+  // silently fell back to a hardcoded $32 while real silver trades ~$60.
+  // Chain: spot → futures (fapi has XAGUSDT) → CoinGecko → last resort 400.
   let price = 0;
   let change24h = 0;
   
@@ -250,6 +291,18 @@ export default async function handler(req: any, res: any) {
     console.error('Price fetch failed:', e);
   }
   
+  // Futures fallback (has XAGUSDT + deeper metals coverage)
+  if (price === 0) {
+    try {
+      const r = await fetch(`https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${assetMeta.binance}`, { headers: { 'User-Agent': 'GNC/1.0' } });
+      const t = await r.json();
+      if (t.lastPrice) {
+        price = parseFloat(t.lastPrice);
+        change24h = parseFloat(t.priceChangePercent || '0');
+      }
+    } catch (e) {}
+  }
+  
   // Fallback to CoinGecko
   if (price === 0) {
     try {
@@ -262,24 +315,41 @@ export default async function handler(req: any, res: any) {
     } catch (e) {}
   }
   
-  // Final fallback
-  const FALLBACK: Record<string, number> = { btc: 85000, eth: 3400, sol: 150, xrp: 2.4, bnb: 650, gold: 4200, silver: 32 };
-  if (price === 0) price = FALLBACK[assetKey] || 85000;
+  // ✅ FIX: no more silent hardcoded fallback price — if every source failed,
+  // say so honestly instead of issuing a verdict on a made-up number.
+  if (price === 0) {
+    return res.status(503).json({
+      error: 'Live price unavailable for this asset right now. Please retry.',
+      asset: assetKey.toUpperCase(),
+    });
+  }
   
-  // Fetch klines for technical indicators
-  let klines: number[] = [];
-  try {
-    const r = await fetch(`${BINANCE_API}/api/v3/klines?symbol=${assetMeta.binance}&interval=1h&limit=100`, { headers: { 'User-Agent': 'GNC/1.0' } });
-    const k = await r.json();
-    if (Array.isArray(k)) klines = k.map((c: any) => parseFloat(c[4]));
-  } catch (e) {}
+  // Fetch klines PER TIMEFRAME — a 15m verdict must be computed on 15m candles.
+  // ✅ FIX: previously ONE set of 1h candles fed all five timeframes, so the
+  // "15m" verdict was really a 1h verdict with tighter levels.
+  const tfs = ['15m', '30m', '1h', '4h', '1d'];
   
-  // Generate synthetic klines if needed
-  if (klines.length < 50) {
-    klines = Array(100).fill(0).map((_, i) => {
-      const trend = (change24h / 100) * (i / 100);
-      const noise = (Math.random() - 0.5) * 0.008;
-      return price * (1 + trend + noise);
+  async function fetchCloses(interval: string): Promise<number[]> {
+    // spot first, futures fallback (XAGUSDT has no spot candles)
+    for (const base of [`${BINANCE_API}/api/v3`, 'https://fapi.binance.com/fapi/v1']) {
+      try {
+        const r = await fetch(`${base}/klines?symbol=${assetMeta.binance}&interval=${interval}&limit=100`, { headers: { 'User-Agent': 'GNC/1.0' } });
+        const k = await r.json();
+        if (Array.isArray(k) && k.length >= 50) return k.map((c: any) => parseFloat(c[4]));
+      } catch (e) {}
+    }
+    return [];
+  }
+  
+  const closesByTf: Record<string, number[]> = {};
+  await Promise.all(tfs.map(async (tf) => { closesByTf[tf] = await fetchCloses(tf); }));
+  
+  // ✅ FIX: never verdict on fabricated candles — if an asset has no real
+  // candles at all, say so instead of inventing them.
+  if (tfs.every((tf) => closesByTf[tf].length < 50)) {
+    return res.status(503).json({
+      error: 'Candle data unavailable for this asset right now. Please retry.',
+      asset: assetKey.toUpperCase(),
     });
   }
   
@@ -293,7 +363,7 @@ export default async function handler(req: any, res: any) {
   }
   
   function rsi(arr: number[], period = 14): number {
-    if (arr.length < period + 1) return 54;
+    if (arr.length < period + 1) return 50;
     let gains = 0, losses = 0;
     for (let i = arr.length - period; i < arr.length; i++) {
       let d = arr[i] - arr[i - 1];
@@ -304,24 +374,34 @@ export default async function handler(req: any, res: any) {
     return 100 - (100 / (1 + rs));
   }
   
-  const ema20 = ema(klines, 20);
-  // ✅ FIX: was ema(klines, 30) — mislabelled period-30 average as "EMA50"
-  const ema50 = ema(klines, 50);
-  const rsi14 = rsi(klines, 14);
+  // ✅ FIX: per-timeframe EMA/RSI from that timeframe's OWN candles
+  const techByTf: Record<string, { ema20: number; ema50: number; rsi14: number }> = {};
+  for (const tf of tfs) {
+    const closes = closesByTf[tf];
+    if (closes.length >= 50) {
+      techByTf[tf] = { ema20: ema(closes, 20), ema50: ema(closes, 50), rsi14: rsi(closes, 14) };
+    } else {
+      // this TF's candles unavailable → borrow the next available TF's tech
+      const donor = tfs.map((t) => techByTf[t]).find(Boolean);
+      techByTf[tf] = donor || { ema20: price, ema50: price, rsi14: 50 };
+    }
+  }
+  const { ema20, ema50, rsi14 } = techByTf['1h'] || techByTf[tfs.find((t) => techByTf[t]) || '1h']; // 1h tech drives the reasoning boxes
   
   // Fetch REAL market data
   const marketData = await fetchAllMarketData(assetKey);
   
   // Generate verdicts for all timeframes
-  const tfs = ['15m', '30m', '1h', '4h', '1d'];
   const verdicts: Record<string, any> = {};
   
   const multMap: Record<string, number> = { '15m': 0.009, '30m': 0.013, '1h': 0.02, '4h': 0.035, '1d': 0.06 };
   
   for (const tf of tfs) {
     const mult = multMap[tf] || 0.02;
-    const technicalScore = calculateTechnicalScore(price, ema20, ema50, rsi14);
-    const compositeScore = calculateCompositeScore(technicalScore, marketData, tf, change24h);
+    // ✅ per-timeframe technicals
+    const tech = techByTf[tf];
+    const technicalScore = calculateTechnicalScore(price, tech.ema20, tech.ema50, tech.rsi14);
+    const compositeScore = calculateCompositeScore(technicalScore, marketData, tf, change24h, assetKey);
     const { bias, confidence, signal } = getBiasAndConfidence(compositeScore);
     const isBullish = bias.includes('BULL');
     // ✅ FIX: NEUTRAL verdicts previously got bearish-biased levels (SL above
@@ -336,7 +416,7 @@ export default async function handler(req: any, res: any) {
     const t1 = price * (1 + dir * mult * 1.6);
     const t2 = price * (1 + dir * mult * 3);
     
-    const reasoningBoxes = buildReasoningBoxes(price, ema20, ema50, rsi14, marketData, tf);
+    const reasoningBoxes = buildReasoningBoxes(price, ema20, ema50, rsi14, marketData, tf, assetKey);
     
     const verdictSummary = {
       title: '🎯 Verdict Summary',
@@ -364,16 +444,17 @@ export default async function handler(req: any, res: any) {
       stopLoss: Number(sl.toFixed(assetMeta.decimals)),
       target1: Number(t1.toFixed(assetMeta.decimals)),
       target2: Number(t2.toFixed(assetMeta.decimals)),
-      rsi: Math.round(rsi14),
-      ema20: Number(ema20.toFixed(assetMeta.decimals)),
-      ema50: Number(ema50.toFixed(assetMeta.decimals)),
+      // ✅ per-TF technicals (were 1h values copied into every timeframe)
+      rsi: Math.round(tech.rsi14),
+      ema20: Number(tech.ema20.toFixed(assetMeta.decimals)),
+      ema50: Number(tech.ema50.toFixed(assetMeta.decimals)),
       change24h: Number(change24h.toFixed(2)),
       factors: {
         technical: Number(technicalScore.toFixed(2)),
-        openInterest: Number((marketData.openInterest.change24h > 5 ? 0.6 : marketData.openInterest.change24h < -5 ? -0.4 : 0).toFixed(2)),
-        longShortRatio: Number((marketData.longShortRatio.value > 0.65 ? -0.5 : marketData.longShortRatio.value < 0.45 ? 0.5 : 0).toFixed(2)),
+        openInterest: Number(((function(){ const c = marketData.openInterest.change24h; return c > 5 ? (change24h > 0 ? 0.6 : -0.5) : c < -5 ? -0.4 : 0; })()).toFixed(2)),
+        longShortRatio: Number(((function(){ const la = marketData.longShortRatio.accounts; return la > 0.65 ? -0.5 : la < 0.45 ? 0.5 : (0.5 - la) * 0.4; })()).toFixed(2)),
         liquidations: Number((marketData.liquidations.longs > marketData.liquidations.shorts * 1.5 ? 0.4 : marketData.liquidations.shorts > marketData.liquidations.longs * 1.5 ? -0.4 : 0).toFixed(2)),
-        fearGreed: Number(((marketData.fearGreedIndex > 75 ? -0.6 : marketData.fearGreedIndex < 25 ? 0.6 : (marketData.fearGreedIndex - 50) / 50)).toFixed(2)),
+        fearGreed: Number(((function(){ if (assetKey === 'gold' || assetKey === 'silver') return 0; const fg = marketData.fearGreedIndex; return fg > 75 ? -0.6 : fg < 25 ? 0.6 : (50 - fg) / 50; })()).toFixed(2)),
         takerFlow: Number(((marketData.takerFlow.ratio - 0.5) * 2).toFixed(2)),
         newsSentiment: Number(Math.max(-0.8, Math.min(0.8, marketData.newsSentiment.score)).toFixed(2)),
         whaleActivity: Number((marketData.whaleActivity.netFlow < -2 ? -0.5 : marketData.whaleActivity.netFlow > 2 ? 0.5 : 0).toFixed(2)),

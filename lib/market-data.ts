@@ -206,15 +206,25 @@ async function scoreFeed(url: string, assetWords: string[]): Promise<{ score: nu
 
 export async function fetchNewsSentiment(assetKey: string): Promise<{ score: number; articles: number }> {
   // ✅ FIX: real RSS-based sentiment (previously a hardcoded 0 placeholder).
+  // ✅ FIX 2: metals get ONLY metal-relevant keywords — crypto-generic words
+  // ("crypto", "bitcoin") must never move a gold/silver verdict.
   const asset = getAsset(assetKey);
   const ticker = (asset?.name || assetKey).toLowerCase();
-  const words = [ticker, assetKey.toLowerCase(), 'bitcoin', 'crypto', 'ethereum'];
-  if (assetKey === 'btc') words.push('btc');
-  if (assetKey === 'eth') words.push('eth', 'ethereum');
+  const isCrypto = assetKey !== 'gold' && assetKey !== 'silver';
+  let words: string[];
+  if (isCrypto) {
+    words = [ticker, assetKey.toLowerCase(), 'bitcoin', 'crypto', 'ethereum'];
+    if (assetKey === 'btc') words.push('btc');
+    if (assetKey === 'eth') words.push('eth', 'ethereum');
+  } else {
+    words = assetKey === 'gold' ? ['gold', 'xau'] : ['silver', 'xag'];
+  }
   const feeds = [
     scoreFeed('https://www.coindesk.com/arc/outboundfeeds/rss/', words),
     scoreFeed('https://cointelegraph.com/rss', words),
   ];
+  // metals also read a general-markets feed for macro-relevant headlines
+  if (!isCrypto) feeds.push(scoreFeed('https://feeds.a.dj.com/rss/RSSMarketsMain.xml', words));
   const results = await Promise.allSettled(feeds);
   const scores = results
     .map((r) => (r.status === 'fulfilled' ? r.value : { score: 0, articles: 0 }))
@@ -232,7 +242,15 @@ export async function fetchWhaleActivity(assetKey: string): Promise<{ largeTrans
   const asset = getAsset(assetKey);
   const symbol = asset?.binance || 'BTCUSDT';
   try {
-    const trades = await getJSON(`${BINANCE_API}/api/v3/aggTrades?symbol=${symbol}&limit=1000`, 6000);
+    // ✅ spot first, futures fallback — XAGUSDT has no spot aggTrades
+    let trades: any[] | null = null;
+    try {
+      trades = await getJSON(`${BINANCE_API}/api/v3/aggTrades?symbol=${symbol}&limit=1000`, 6000);
+    } catch (e) { /* try futures below */ }
+    if (!Array.isArray(trades) || !trades.length) {
+      const fut = await getJSON(`https://fapi.binance.com/fapi/v1/aggTrades?symbol=${symbol}&limit=1000`, 6000);
+      trades = Array.isArray(fut) ? fut : null;
+    }
     if (!Array.isArray(trades)) return { largeTransactions: 0, netFlow: 0, exchangeInflow: 0 };
     let bigCount = 0, buyNotional = 0, sellNotional = 0;
     trades.forEach((t: any) => {
