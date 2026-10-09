@@ -112,7 +112,10 @@
   function renderUserInfo() {
     var info = $('userInfo'), btn = $('authBtn'), loginBtn = $('loginBtn');
     var u = getSession();
-    if (u && btn) {
+    // ✅ FIX: previously required #authBtn to exist, else the whole function
+    // no-op'd — the verdict topbar only has #loginBtn, so "Login" stayed
+    // visible even after a successful login.
+    if (u) {
       if (info) {
         info.style.display = 'inline-flex';
         info.innerHTML = '<span style="color:#e8edf5">Hi, ' + escapeHtml(u.name || u.email) + '</span>' +
@@ -120,10 +123,10 @@
         var lo = $('logoutLink');
         if (lo) lo.onclick = function (e) { e.preventDefault(); logout(); };
       }
-      btn.style.display = 'none';
+      if (btn) btn.style.display = 'none';
       if (loginBtn) loginBtn.style.display = 'none';
-    } else if (btn) {
-      btn.style.display = '';
+    } else {
+      if (btn) btn.style.display = '';
       if (loginBtn) loginBtn.style.display = '';
       if (info) info.style.display = 'none';
     }
