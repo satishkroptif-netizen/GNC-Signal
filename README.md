@@ -11,6 +11,9 @@ Fixes for the 7 critical issues found on gncsignal.com.
 | 5 | Random `Math.random()` buy/sell verdicts when the API fails | Honest error card with Retry button | `verdict.html` |
 | 6 | Stale hardcoded prices ($84,447 / $84,014 / $2,915 gold) labelled "LIVE" | Honest "connecting…" / "DELAYED" / "unavailable" states | `verdict.html`, `index.html`, `admin.html` |
 | 7 | Copy bugs: FAQ promises nonexistent nav buttons; footer is a spec note; paywall contradicts itself | Rewritten FAQ, footer, paywall copy + cross-link to GnC Signal | `index.html`, `verdict.html` |
+| 8 | No **Login** button anywhere; post-verify landed on the homepage instead of the terminal | Login button on homepage + verdict topbar + paywall link; success step now opens Verdict Terminal | `index.html`, `verdict.html`, `login.html` |
+| 9 | `.env` with real keys committed to the public repo; legacy `api/auth/*` routes import a `resend` npm package that isn't in `package.json` (build-breaker, keeps the site on a stale deploy) | `.env` untracked + `.env.example` added; dead `api/auth/` routes + `lib/auth-middleware.ts` removed | `.env.example`, `api/`, `lib/` |
+| 10 | `lib/supabase.ts` `getClientIP` calls `req.headers.get()` → throws on Vercel Node runtime → verdict API 500s | Runtime-agnostic header read (works with `.get()` and plain object) | `lib/supabase.ts` |
 
 ## How to deploy
 

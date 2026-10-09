@@ -15,8 +15,11 @@ async function checkAuth() {
       return false;
     }
 
-    const r = await fetch('/api/auth/me');
-    const data = await r.json();
+    // ✅ FIX: legacy Supabase session endpoint removed — fall back to the local check
+    const r = await fetch('/api/auth/me').catch(() => null);
+    if (!r || !r.ok) return !localUsed || !!session;
+    const data = await r.json().catch(() => null);
+    if (!data) return !localUsed || !!session;
 
     if (!data.freeViewAvailable && !data.authenticated) {
       const paywall = document.getElementById('paywall');
@@ -125,7 +128,7 @@ async function initUI() {
     btn.disabled = true;
 
     try {
-      const res = await fetch('/api/auth/send-otp', {
+      const res = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, name, phone, purpose: 'signup' }),
@@ -161,7 +164,7 @@ async function initUI() {
     btn.disabled = true;
 
     try {
-      const res = await fetch('/api/auth/verify-otp', {
+      const res = await fetch('/api/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp: code, purpose: 'signup' }),
@@ -200,7 +203,7 @@ async function initUI() {
     const phone = document.getElementById('signupPhone').value.trim();
 
     try {
-      const res = await fetch('/api/auth/send-otp', {
+      const res = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, name, phone, purpose: 'signup' }),

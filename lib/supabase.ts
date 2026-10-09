@@ -218,7 +218,16 @@ export function checkRateLimit(identifier: string, maxRequests = 30, windowMs = 
 }
 
 export function getClientIP(req: Request | any): string {
-  const forwarded = req.headers.get('x-forwarded-for');
-  const realIP = req.headers.get('x-real-ip');
-  return forwarded?.split(',')[0]?.trim() || realIP || 'unknown';
+  // ✅ FIX: works on BOTH runtimes — Web Request (headers.get) and
+  // Vercel/Next Node runtime (plain object). The old code called
+  // req.headers.get() unconditionally, which throws on the Node runtime
+  // and 500s every request.
+  const h: any = (req && req.headers) || {};
+  const get = (name: string): string | undefined => {
+    if (typeof h.get === 'function') return h.get(name);
+    return h[name];
+  };
+  const forwarded = get('x-forwarded-for');
+  const realIP = get('x-real-ip');
+  return (forwarded && String(forwarded).split(',')[0].trim()) || realIP || 'unknown';
 }

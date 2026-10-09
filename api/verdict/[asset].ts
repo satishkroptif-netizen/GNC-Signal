@@ -302,7 +302,8 @@ export default async function handler(req: any, res: any) {
   }
   
   const ema20 = ema(klines, 20);
-  const ema50 = ema(klines, 30);
+  // ✅ FIX: was ema(klines, 30) — mislabelled period-30 average as "EMA50"
+  const ema50 = ema(klines, 50);
   const rsi14 = rsi(klines, 14);
   
   // Fetch REAL market data

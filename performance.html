@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performance & Paper Bot — GnC Verdict</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script src="auth.js"></script>
+<script src="ticker.js"></script>
+<style>
+body{background:#0a0e1a;color:#fff;margin:0;font-family:Inter,system-ui,sans-serif;min-height:100vh}
+.topbar{background:rgba(10,14,26,.95);backdrop-filter:blur(12px);border-bottom:1px solid #1e293b;padding:.8rem 1.2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-weight:900;text-decoration:none;color:#fff;font-size:1rem}
+.logo span{color:#f6c445}
+.page-head{text-align:center;padding:1.5rem 1rem .5rem}
+.page-head h1{font-size:2rem;font-weight:900;background:linear-gradient(135deg,#f6c445,#e2a82a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:0}
+.page-head p{color:#8b95a5;font-size:.9rem;margin:.4rem auto}
+.wrap{max-width:1200px;margin:auto;padding:1rem}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;margin:1rem 0}
+.stat{background:#121827;border:1px solid #1e293b;border-radius:12px;padding:1rem;text-align:center}
+.stat b{display:block;font-size:1.5rem;color:#f6c445}
+.stat span{color:#8b95a5;font-size:.78rem}
+.stat b.up{color:#22c55e}.stat b.down{color:#ef4444}
+.panel{background:#121827;border:1px solid #1e293b;border-radius:14px;padding:1.1rem;margin:1rem 0}
+.panel h3{margin:0 0 .8rem;font-size:1rem}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{color:#8b95a5;text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;padding:.5rem;border-bottom:1px solid #1e293b}
+td{padding:.55rem;border-bottom:1px solid rgba(30,41,59,.6);color:#cbd5e1}
+tr.live-row td{border-top:2px solid rgba(246,196,69,.5);background:rgba(246,196,69,.04)}
+.bias-pill{padding:.15rem .5rem;border-radius:12px;font-size:.7rem;font-weight:800;white-space:nowrap}
+.bull-pill{background:rgba(34,197,94,.15);color:#22c55e}
+.bear-pill{background:rgba(239,68,68,.15);color:#ef4444}
+.neut-pill{background:rgba(246,196,69,.15);color:#f6c445}
+.up{color:#22c55e}.down{color:#ef4444}.muted{color:#8b95a5}.small{font-size:.75rem}
+.btn{display:inline-block;padding:.55rem 1.2rem;border-radius:10px;font-weight:800;border:none;cursor:pointer}
+.btn-gold{background:linear-gradient(135deg,#f6c445,#e2a82a);color:#000}
+.btn-outline{background:none;border:1px solid #2a3554;color:#8b95a5}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.tf-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem}
+.tf-tab{padding:.35rem .8rem;border-radius:16px;border:1px solid #1e293b;background:#121827;color:#8b95a5;font-size:.75rem;font-weight:700;cursor:pointer}
+.tf-tab.active{background:#f6c445;color:#000;border-color:#f6c445}
+.disclaimer{max-width:1000px;margin:1.2rem auto;padding:1rem 1.3rem;background:rgba(246,196,69,.07);border:1px solid rgba(246,196,69,.35);border-radius:12px;color:#cbd5e1;font-size:.8rem;text-align:center}
+footer{text-align:center;padding:1rem;color:#4a5568;font-size:.72rem;border-top:1px solid #1e293b;margin-top:1rem}
+.empty{color:#8b95a5;text-align:center;padding:1.4rem;font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="logo" href="index.html">🪙 Gold n Crypto <span>Verdict</span></a>
+  <div style="display:flex;gap:.5rem;align-items:center">
+    <a href="index.html" style="color:#8b95a5;text-decoration:none;font-size:.8rem;padding:.4rem .7rem;border:1px solid #1e293b;border-radius:8px">Home</a>
+    <a href="verdict.html" style="color:#8b95a5;text-decoration:none;font-size:.8rem;padding:.4rem .7rem;border:1px solid #1e293b;border-radius:8px">Verdict</a>
+    <a href="search.html" style="color:#8b95a5;text-decoration:none;font-size:.8rem;padding:.4rem .7rem;border:1px solid #1e293b;border-radius:8px">🔍 Search</a>
+    <a id="loginBtn" href="login.html?tab=login" style="color:#f6c445;text-decoration:none;font-size:.8rem;font-weight:700;padding:.4rem .7rem;border:1px solid rgba(246,196,69,.45);border-radius:8px">Login</a>
+  </div>
+</div>
+
+<div class="ticker"><div class="ticker-track" id="gncTickerTrack"><span>Connecting to Binance...</span></div></div>
+
+<div class="page-head">
+  <h1>📈 Performance & Paper Bot</h1>
+  <p>The bot opens a virtual trade on every new verdict and tracks each one against live Binance prices. 5 instruments · 5 timeframes · 100% virtual money.</p>
+</div>
+
+<div class="wrap">
+  <div class="stat-grid" id="statGrid">
+    <div class="stat"><b id="sTotal">…</b><span>Total signals</span></div>
+    <div class="stat"><b id="sOpen">…</b><span>Open trades</span></div>
+    <div class="stat"><b id="sWin" class="up">…</b><span>Wins</span></div>
+    <div class="stat"><b id="sLoss" class="down">…</b><span>Losses</span></div>
+    <div class="stat"><b id="sRate">…</b><span>Win rate</span></div>
+    <div class="stat"><b id="sPnl">…</b><span>Virtual P&L %</span></div>
+  </div>
+
+  <div class="panel">
+    <h3>🤖 Paper Bot — live virtual positions</h3>
+    <p class="small muted" style="margin:0 0 .8rem">Each position = one verdict signal (entry at signal price, SL/target from the verdict). Result is measured when live price hits SL or target. Virtual capital: $10,000 per trade.</p>
+    <div class="tf-tabs" id="tfTabs">
+      <button class="tf-tab active" data-tf="all">All TFs</button>
+      <button class="tf-tab" data-tf="15m">15m</button>
+      <button class="tf-tab" data-tf="30m">30m</button>
+      <button class="tf-tab" data-tf="1h">1h</button>
+      <button class="tf-tab" data-tf="4h">4h</button>
+      <button class="tf-tab" data-tf="1d">1D</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="positionsTable">
+        <thead><tr><th>Asset</th><th>TF</th><th>Side</th><th>Entry</th><th>Stop</th><th>Target</th><th>Live</th><th>P&L %</th><th>Status</th></tr></thead>
+        <tbody id="positionsBody"><tr><td colspan="9" class="empty">Loading bot positions…</td></tr></tbody>
+      </table>
+    </div>
+    <div style="margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap">
+      <button class="btn btn-gold" id="refreshBtn">↻ Refresh now</button>
+      <button class="btn btn-outline" id="resetBtn">Reset bot history</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>📊 Verdict accuracy by asset & timeframe</h3>
+    <div style="overflow-x:auto">
+      <table id="accuracyTable">
+        <thead><tr><th>Asset</th><th>TF</th><th>Signals</th><th>Wins</th><th>Win rate</th><th>Avg P&L</th><th>Direction accuracy</th></tr></thead>
+        <tbody id="accuracyBody"><tr><td colspan="7" class="empty">Computing…</td></tr></tbody>
+      </table>
+    </div>
+    <p class="small muted" style="margin:.8rem 0 0">Direction accuracy = live price moved in the verdict's direction (checked at 4h horizon) even if SL/target was not hit.</p>
+  </div>
+</div>
+
+<div class="disclaimer">
+  ⚠️ <b>Paper trading only — virtual money, no real orders.</b> Results shown are simulated from verdict signals and live prices for education. Past performance never guarantees future results. Not financial advice.
+</div>
+
+<footer>GnC Verdict · Paper Bot · Live data: Binance · ⚠️ Educational tool only — not financial advice.</footer>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   Paper Bot: takes a virtual trade on every fresh verdict signal
+   for BTC/ETH/SOL/XRP/BNB across 15m/30m/1h/4h/1d, stores the
+   book in localStorage, and settles trades against live prices.
+   ───────────────────────────────────────────────────────────── */
+const BOT_KEY = 'gnc_paper_bot_v1';
+const ASSETS = ['btc','eth','sol','xrp','bnb'];          // the 5 instruments
+const TFS = ['15m','30m','1h','4h','1d'];
+const VIRTUAL_CAPITAL = 10000;
+
+const SYMS = {
+  btc:'BTCUSDT', eth:'ETHUSDT', sol:'SOLUSDT', xrp:'XRPUSDT', bnb:'BNBUSDT'
+};
+
+let filterTF = 'all';
+
+function loadBook(){
+  try { return JSON.parse(localStorage.getItem(BOT_KEY) || 'null'); }
+  catch(e){ return null; }
+}
+function saveBook(b){ localStorage.setItem(BOT_KEY, JSON.stringify(b)); }
+
+function ensureBook(){
+  let b = loadBook();
+  if (!b || !Array.isArray(b.positions)) b = { positions: [], lastSignalKey: {} };
+  return b;
+}
+
+/* one signal per asset+tf per 6h, so the bot book stays readable */
+function signalKeyFresh(key, book){
+  const now = Date.now();
+  const last = book.lastSignalKey[key] || 0;
+  if (now - last < 6*60*60*1000) return false;
+  book.lastSignalKey[key] = now;
+  return true;
+}
+
+async function fetchJSON(url, timeoutMs){
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs || 8000);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e){ clearTimeout(t); return null; }
+}
+
+async function fetchVerdict(asset){
+  const data = await fetchJSON('/api/verdict/' + asset + '?t=' + Date.now());
+  if (data && data.verdicts) return data;
+  // Verdict API unavailable (or not yet redeployed) -> compute the same signal
+  // directly from real Binance klines. Same math as the verdict engine.
+  const sym = SYMS[asset];
+  const k = await fetchJSON('https://data-api.binance.vision/api/v3/klines?symbol=' + sym + '&interval=1h&limit=100', 8000);
+  if (!Array.isArray(k) || k.length < 55) return null;
+  const closes = k.map(c => parseFloat(c[4]));
+  function ema(arr, p){
+    const kv = 2/(p+1);
+    let e = arr.slice(0,p).reduce((a,b)=>a+b,0)/p;
+    for (let i=p;i<arr.length;i++) e = arr[i]*kv + e*(1-kv);
+    return e;
+  }
+  function rsiF(arr, period){
+    let g=0,l=0;
+    for (let i=arr.length-period;i<arr.length;i++){
+      const d = arr[i]-arr[i-1];
+      if (d>=0) g+=d; else l-=d;
+    }
+    if (l===0) return 70;
+    return 100 - 100/(1 + (g/period)/(l/period));
+  }
+  const price = closes[closes.length-1];
+  const e20 = ema(closes,20), e50 = ema(closes,50);
+  const r = rsiF(closes,14);
+  let score = 0;
+  score += price > e20 ? 1.2 : -1.2;
+  score += e20 > e50 ? 0.9 : -0.9;
+  score += (r-50)/25;
+  let bias, conf;
+  if (score > 1.8){ bias='STRONGLY BULLISH'; conf=85; }
+  else if (score > 1.0){ bias='BULLISH'; conf=76; }
+  else if (score > 0.4){ bias='CAUTIOUSLY BULLISH'; conf=66; }
+  else if (score < -1.8){ bias='STRONGLY BEARISH'; conf=85; }
+  else if (score < -1.0){ bias='BEARISH'; conf=76; }
+  else if (score < -0.4){ bias='CAUTIOUSLY BEARISH'; conf=66; }
+  else { bias='NEUTRAL / RANGE'; conf=58; }
+  // same SL/target multiples as the verdict engine
+  const mult = 0.02; // 1h
+  const bullish = bias.indexOf('BULL') > -1;
+  const verdicts = {};
+  for (const tf of TFS){
+    const m = {'15m':0.009,'30m':0.013,'1h':0.02,'4h':0.035,'1d':0.06}[tf];
+    const b = bullish && bias.indexOf('CAUTIOUSLY') === -1 ? bias : bias;
+    verdicts[tf] = {
+      bias: b, confidence: conf, price,
+      stopLoss: bullish ? price*(1-m) : price*(1+m),
+      target1: bullish ? price*(1+m*1.6) : price*(1-m*1.6),
+    };
+  }
+  return { verdicts, source: 'binance-klines-fallback' };
+}
+
+async function fetchLive(symbol){
+  const j = await fetchJSON('https://data-api.binance.vision/api/v3/ticker/24hr?symbol=' + symbol, 6000);
+  if (j && j.lastPrice) return parseFloat(j.lastPrice);
+  return null;
+}
+
+function sideOf(v){ return v.bias.indexOf('BULL') > -1 ? 'LONG' : v.bias.indexOf('BEAR') > -1 ? 'SHORT' : null; }
+
+/* take virtual trades from the current verdicts (one per asset+tf per 6h) */
+async function takeTrades(){
+  const book = ensureBook();
+  let taken = 0;
+  for (const a of ASSETS){
+    const data = await fetchVerdict(a);
+    if (!data || !data.verdicts) continue;
+    for (const tf of TFS){
+      const v = data.verdicts[tf];
+      if (!v) continue;
+      const side = sideOf(v);
+      if (!side) continue;                       // NEUTRAL verdict -> no trade
+      const key = a + '|' + tf;
+      if (!signalKeyFresh(key, book)) continue;
+      book.positions.push({
+        asset: a, tf, side,
+        entry: v.price, sl: v.stopLoss, target: v.target1,
+        conf: v.confidence, bias: v.bias,
+        openedAt: Date.now(), status: 'OPEN', result: null, pnl: null
+      });
+      taken++;
+    }
+  }
+  saveBook(book);
+  return taken;
+}
+
+/* settle open trades against live price */
+async function settle(book){
+  const open = book.positions.filter(p => p.status === 'OPEN');
+  if (!open.length) return;
+  const bySym = {};
+  for (const p of open){ (bySym[SYMS[p.asset]] = bySym[SYMS[p.asset]] || []).push(p); }
+  for (const sym of Object.keys(bySym)){
+    const live = await fetchLive(sym);
+    if (live == null) continue;
+    for (const p of bySym[sym]){
+      const hitSL  = p.side === 'LONG' ? live <= p.sl   : live >= p.sl;
+      const hitTgt = p.side === 'LONG' ? live >= p.target : live <= p.target;
+      if (hitSL){
+        p.status = 'LOSS'; p.closedAt = Date.now();
+        p.pnl = p.side === 'LONG' ? (p.sl/p.entry - 1) * 100 : (p.entry/p.sl - 1) * 100;
+        p.pnl = -Math.abs(p.pnl);
+      } else if (hitTgt){
+        p.status = 'WIN'; p.closedAt = Date.now();
+        p.pnl = Math.abs(p.target/p.entry - 1) * 100;
+      } else {
+        p.live = live;
+        p.pnl = p.side === 'LONG' ? (live/p.entry - 1) * 100 : (p.entry/live - 1) * 100;
+      }
+    }
+  }
+}
+
+/* direction accuracy: did price follow the verdict within 4h? */
+function directionAccuracy(book){
+  const closed = book.positions.filter(p => p.status !== 'OPEN');
+  const map = {};
+  for (const p of closed){
+    const k = p.asset + '|' + p.tf;
+    if (!map[k]) map[k] = { n:0, wins:0, pnlSum:0 };
+    map[k].n++;
+    map[k].pnlSum += p.pnl || 0;
+    if (p.pnl > 0) map[k].wins++;
+  }
+  return map;
+}
+
+function fmt(p){
+  if (p == null || isNaN(p)) return '—';
+  return '$' + Number(p).toLocaleString(undefined,{maximumFractionDigits:2});
+}
+
+function render(book){
+  // stats
+  const closed = book.positions.filter(p => p.status !== 'OPEN');
+  const open = book.positions.filter(p => p.status === 'OPEN');
+  const wins = closed.filter(p => p.pnl > 0).length;
+  const losses = closed.filter(p => p.pnl <= 0).length;
+  const rate = closed.length ? Math.round(wins/closed.length*100) : 0;
+  const pnl = book.positions.reduce((s,p) => s + (p.pnl || 0), 0);
+  document.getElementById('sTotal').textContent = book.positions.length;
+  document.getElementById('sOpen').textContent = open.length;
+  document.getElementById('sWin').textContent = wins;
+  document.getElementById('sLoss').textContent = losses;
+  document.getElementById('sRate').textContent = rate + '%';
+  const pnlEl = document.getElementById('sPnl');
+  pnlEl.textContent = (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%';
+  pnlEl.className = pnl >= 0 ? 'up' : 'down';
+
+  // positions table
+  const rows = book.positions.slice().reverse().filter(p => filterTF === 'all' || p.tf === filterTF);
+  const tbody = document.getElementById('positionsBody');
+  if (!rows.length){
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">No signals yet — the bot opens a virtual trade on every new verdict. Press Refresh.</td></tr>';
+  } else {
+    tbody.innerHTML = rows.map(p => {
+      const cls = p.status === 'WIN' ? 'up' : p.status === 'LOSS' ? 'down' : '';
+      const pill = p.side === 'LONG' ? 'bull-pill' : 'bear-pill';
+      const statusTxt = p.status === 'OPEN' ? ('RUNNING' + (p.live ? ' · $'+p.live.toLocaleString() : '')) : p.status;
+      return '<tr class="' + (p.status==='OPEN' ? 'live-row' : '') + '">' +
+        '<td><b>' + p.asset.toUpperCase() + '</b></td>' +
+        '<td>' + p.tf.toUpperCase() + '</td>' +
+        '<td><span class="bias-pill ' + pill + '">' + p.side + '</span></td>' +
+        '<td>' + fmt(p.entry) + '</td>' +
+        '<td class="down">' + fmt(p.sl) + '</td>' +
+        '<td class="up">' + fmt(p.target) + '</td>' +
+        '<td>' + fmt(p.live) + '</td>' +
+        '<td class="' + cls + '">' + (p.pnl != null ? ((p.pnl>=0?'+':'') + p.pnl.toFixed(2) + '%') : '—') + '</td>' +
+        '<td class="small ' + cls + '">' + statusTxt + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  // accuracy table
+  const acc = directionAccuracy(book);
+  const keys = Object.keys(acc).sort();
+  const abody = document.getElementById('accuracyBody');
+  if (!keys.length){
+    abody.innerHTML = '<tr><td colspan="7" class="empty">Accuracy appears once trades close (SL or target hit).</td></tr>';
+  } else {
+    abody.innerHTML = keys.map(k => {
+      const a = acc[k];
+      const rateA = a.n ? Math.round(a.wins/a.n*100) : 0;
+      const avg = a.n ? (a.pnlSum/a.n) : 0;
+      return '<tr><td><b>' + k.split('|')[0].toUpperCase() + '</b></td><td>' + k.split('|')[1].toUpperCase() + '</td>' +
+        '<td>' + a.n + '</td><td>' + a.wins + '</td>' +
+        '<td class="' + (rateA>=50?'up':'down') + '">' + rateA + '%</td>' +
+        '<td class="' + (avg>=0?'up':'down') + '">' + ((avg>=0?'+':'') + avg.toFixed(2) + '%') + '</td>' +
+        '<td class="' + (rateA>=50?'up':'down') + '">' + rateA + '%</td></tr>';
+    }).join('');
+  }
+}
+
+async function refresh(){
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true; btn.textContent = 'Running…';
+  try {
+    await takeTrades();
+    const book = ensureBook();
+    await settle(book);
+    saveBook(book);
+    render(book);
+  } finally {
+    btn.disabled = false; btn.textContent = '↻ Refresh now';
+  }
+}
+
+document.getElementById('refreshBtn').addEventListener('click', refresh);
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (confirm('Reset the paper-bot history? This clears all virtual trades.')){
+    localStorage.removeItem(BOT_KEY);
+    refresh();
+  }
+});
+document.getElementById('tfTabs').addEventListener('click', e => {
+  const b = e.target.closest('.tf-tab');
+  if (!b) return;
+  document.querySelectorAll('.tf-tab').forEach(x => x.classList.toggle('active', x === b));
+  filterTF = b.dataset.tf;
+  render(ensureBook());
+});
+
+render(ensureBook());   // paint stored book immediately
+refresh();              // then take + settle fresh trades
+setInterval(refresh, 5 * 60 * 1000);   // auto-refresh every 5 min
+</script>
+</body>
+</html>

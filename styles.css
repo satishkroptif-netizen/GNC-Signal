@@ -129,6 +129,13 @@ footer .small{text-align:center}
 .telegram-cta p{opacity:.85;margin-bottom:1.2rem}
 .btn-white{background:#fff;color:#0b1220}
 
+/* AUTH TABS (login page + verdict modal) */
+.auth-tabs{display:flex;margin-bottom:1.2rem;border-bottom:1px solid #1e293b}
+.auth-tab{flex:1;text-align:center;padding:.8rem;background:none;border:none;color:var(--muted);font-weight:700;cursor:pointer;position:relative;transition:color .2s}
+.auth-tab:hover{color:var(--gold)}
+.auth-tab.active{color:var(--gold)}
+.auth-tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--gold)}
+
 /* AUTH MODAL */
 #authModal input:focus{outline:none;border-color:var(--gold)}
 #authModal .btn{margin-top:.5rem}

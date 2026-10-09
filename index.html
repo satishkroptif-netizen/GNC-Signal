@@ -41,15 +41,16 @@ footer a{color:#f6c445;text-decoration:underline}
 <nav class="nav">
   <div class="nav-inner">
     <a href="index.html" class="logo">🪙 Gold n Crypto <span>Traders</span></a>
-    <div class="nav-links"><a href="#faq">FAQ</a></div>
+    <div class="nav-links"><a href="search.html">🔍 Search</a><a href="performance.html">📈 Performance</a><a href="#faq">FAQ</a></div>
     <div class="nav-cta">
       <span id="userInfo" style="display:none;align-items:center;gap:.5rem"></span>
-      <!-- ✅ FIX: Sign Up now goes to the working OTP login page -->
-      <a id="authBtn" href="login.html" class="btn-ghost">Sign Up</a>
+      <a id="authBtn" href="login.html?tab=signup" class="btn-ghost">Sign Up</a>
+      <a id="loginBtn" href="login.html?tab=login" class="btn-ghost">Login</a>
       <a href="verdict.html" class="btn-gold">Verdict</a>
     </div>
   </div>
 </nav>
+<div class="ticker" style="background:#0d1220;border-bottom:1px solid #1e293b;overflow:hidden;padding:.6rem 0"><div class="ticker-track" id="gncTickerTrack"><span style="margin:0 1.5rem;font-size:.9rem">Connecting to Binance...</span></div></div>
 <header class="hero-min">
   <h1>GnC Verdict</h1>
   <p class="hero-sub">BTC • ETH • SOL • XRP • BNB • Gold • Silver — 15m to 1D. Verdict par click karte hi Verdict Terminal open hoga.</p>
@@ -89,6 +90,7 @@ footer a{color:#f6c445;text-decoration:underline}
   <p>© 2026 Gold n Crypto Traders · Not financial advice · Do your own research</p>
 </footer>
 <script src="auth.js"></script>
+<script src="ticker.js"></script>
 <script>
 async function loadHomePrice(){
   const badge = document.getElementById('homePriceBadge');

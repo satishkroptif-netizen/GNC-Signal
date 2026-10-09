@@ -1,36 +1,195 @@
 <!-- Auth Modal -->
-<div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center;padding:1rem">
-  <div style="background:var(--card);border:1px solid #1e293b;border-radius:18px;padding:2rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto">
+<div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#121827;border:1px solid #1e293b;border-radius:18px;padding:2rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-      <h2 style="margin:0;font-size:1.4rem">🔐 Verify to Continue</h2>
-      <button onclick="hideAuthModal()" style="background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer">&times;</button>
+      <h2 style="margin:0;font-size:1.4rem">🔐 Sign In / Sign Up</h2>
+      <button onclick="hideAuthModal()" style="background:none;border:none;color:#8b95a5;font-size:1.5rem;cursor:pointer">&times;</button>
     </div>
 
-    <!-- Signup Step -->
-    <div id="signupStep">
-      <p class="muted" style="margin-bottom:1rem">Sign up with your email to view all timeframe verdicts. We'll send you a verification code.</p>
-      <form id="signupForm">
-        <input id="signupName" type="text" placeholder="Your Name" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:var(--txt);border:1px solid #2a3554">
-        <input id="signupEmail" type="email" placeholder="Email Address" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:var(--txt);border:1px solid #2a3554">
-        <input id="signupPhone" type="tel" placeholder="Phone Number (10 digits)" pattern="[0-9]{10}" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:var(--txt);border:1px solid #2a3554">
-        <button class="btn btn-gold" type="submit" style="width:100%;margin-top:1rem">Send Verification Code</button>
-      </form>
-      <p class="muted small" style="margin-top:1rem;text-align:center">By signing up, you agree to receive trading signals via email.</p>
+    <!-- Auth Tabs -->
+    <div style="display:flex;margin-bottom:1.5rem;border-bottom:1px solid #1e293b">
+      <button id="loginTab" class="auth-tab active" style="flex:1;text-align:center;padding:.8rem;background:none;border:none;color:#8b95a5;font-weight:600;cursor:pointer;position:relative;transition:color .2s">Log In</button>
+      <button id="signupTab" class="auth-tab" style="flex:1;text-align:center;padding:.8rem;background:none;border:none;color:#8b95a5;font-weight:600;cursor:pointer;position:relative;transition:color .2s">Sign Up</button>
     </div>
 
-    <!-- OTP Step -->
-    <div id="otpStep" style="display:none">
-      <p class="muted" style="margin-bottom:1rem">Enter the 6-digit code sent to your email.</p>
-      <form id="otpForm">
-        <input id="otpCode" type="text" placeholder="Enter 6-digit OTP" maxlength="6" pattern="[0-9]{6}" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:var(--txt);border:1px solid #2a3554;font-size:1.5rem;text-align:center;letter-spacing:.5rem">
-        <button class="btn btn-gold" type="submit" style="width:100%;margin-top:1rem">Verify & Continue</button>
+    <!-- Login Form -->
+    <div id="loginForm" style="display:block">
+      <form id="loginFormEl">
+        <input id="loginEmail" type="email" placeholder="Email Address" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554">
+        <input id="loginPassword" type="password" placeholder="Password" required minlength="6" style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554">
+        <button class="btn btn-gold" type="submit" style="width:100%;margin-top:1rem">Log In</button>
       </form>
-      <p style="text-align:center;margin-top:1rem">
-        <a href="#" id="resendOtp" class="muted small">Resend OTP</a>
-      </p>
-      <p style="text-align:center;margin-top:.5rem">
-        <a href="#" onclick="document.getElementById('otpStep').style.display='none';document.getElementById('signupStep').style.display='block'" class="muted small">← Back</a>
-      </p>
+      <p style="text-align:center;margin-top:.8rem"><a href="#" class="muted small">Forgot password?</a></p>
     </div>
+
+    <!-- Signup Form -->
+    <div id="signupForm" style="display:none">
+      <form id="signupFormEl">
+        <input id="signupName" type="text" placeholder="Your Name" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554">
+        <input id="signupEmail" type="email" placeholder="Email Address" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554">
+        <input id="signupPhone" type="tel" placeholder="Phone Number (10 digits)" pattern="[0-9]{10}" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554">
+        <input id="signupPassword" type="password" placeholder="Password (min 6 chars)" required minlength="6" style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554">
+        <button class="btn btn-gold" type="submit" style="width:100%;margin-top:1rem">Create Account</button>
+      </form>
+    </div>
+
+    <!-- Message area used by auth.js -->
+    <p id="authMsg" style="display:none;margin:.8rem 0 0;font-size:.85rem;font-weight:600;text-align:center"></p>
   </div>
 </div>
+
+<script>
+  // Tab switching for auth modal
+  const loginTab = document.getElementById('loginTab');
+  const signupTab = document.getElementById('signupTab');
+  const loginFormDiv = document.getElementById('loginForm');
+  const signupFormDiv = document.getElementById('signupForm');
+
+  function showAuthTab(tab) {
+    if (tab === 'login') {
+      loginTab.classList.add('active');
+      signupTab.classList.remove('active');
+      loginFormDiv.style.display = 'block';
+      signupFormDiv.style.display = 'none';
+    } else {
+      signupTab.classList.add('active');
+      loginTab.classList.remove('active');
+      signupFormDiv.style.display = 'block';
+      loginFormDiv.style.display = 'none';
+    }
+    // Clear message
+    const msg = document.getElementById('authMsg');
+    if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+  }
+
+  loginTab.addEventListener('click', () => showAuthTab('login'));
+  signupTab.addEventListener('click', () => showAuthTab('signup'));
+
+  // Login form handler
+  const loginFormEl = document.getElementById('loginFormEl');
+  if (loginFormEl) loginFormEl.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (!email || !password) {
+      showAuthMsg('Please fill in all fields.', true);
+      return;
+    }
+
+    const btn = loginFormEl.querySelector('button');
+    if (btn) { btn.disabled = true; btn.textContent = 'Logging in...'; }
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem('gnc_user', JSON.stringify({
+          name: data.user.name,
+          email: data.user.email,
+          phone: data.user.phone,
+          verifiedAt: data.user.verifiedAt,
+        }));
+        localStorage.removeItem('gnc_free_view');
+        localStorage.removeItem('gnc_free_view_used');
+        showAuthMsg('Welcome back!', false);
+        setTimeout(() => {
+          if (window.hideAuthModal) window.hideAuthModal();
+          if (window.renderUserInfo) window.renderUserInfo();
+          // If paywall was blocking, load the asset
+          try {
+            const pw = document.getElementById('paywall');
+            if (pw && pw.style.display === 'flex' && typeof loadAsset === 'function') {
+              const asset = (typeof currentAsset !== 'undefined') ? currentAsset : 'btc';
+              loadAsset(asset);
+            }
+          } catch (err) { /* not on verdict page -- ignore */ }
+        }, 500);
+      } else {
+        showAuthMsg(data.error || 'Invalid email or password.', true);
+      }
+    } catch (err) {
+      showAuthMsg('Network error. Check your connection and try again.', true);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Log In'; }
+    }
+  });
+
+  // Signup form handler
+  const signupFormEl = document.getElementById('signupFormEl');
+  if (signupFormEl) signupFormEl.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const phone = document.getElementById('signupPhone').value.trim();
+    const password = document.getElementById('signupPassword').value;
+
+    if (!name || !email || !phone || !password) {
+      showAuthMsg('Please fill in all fields.', true);
+      return;
+    }
+    if (!/^\d{10}$/.test(phone)) {
+      showAuthMsg('Phone must be 10 digits.', true);
+      return;
+    }
+    if (password.length < 6) {
+      showAuthMsg('Password must be at least 6 characters.', true);
+      return;
+    }
+
+    const btn = signupFormEl.querySelector('button');
+    if (btn) { btn.disabled = true; btn.textContent = 'Creating account...'; }
+
+    try {
+      const res = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, password }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem('gnc_user', JSON.stringify({
+          name: data.user.name,
+          email: data.user.email,
+          phone: data.user.phone,
+          verifiedAt: data.user.verifiedAt,
+        }));
+        localStorage.removeItem('gnc_free_view');
+        localStorage.removeItem('gnc_free_view_used');
+        showAuthMsg('Account created! Welcome to GnC Verdict.', false);
+        setTimeout(() => {
+          if (window.hideAuthModal) window.hideAuthModal();
+          if (window.renderUserInfo) window.renderUserInfo();
+          try {
+            const pw = document.getElementById('paywall');
+            if (pw && pw.style.display === 'flex' && typeof loadAsset === 'function') {
+              const asset = (typeof currentAsset !== 'undefined') ? currentAsset : 'btc';
+              loadAsset(asset);
+            }
+          } catch (err) { /* not on verdict page -- ignore */ }
+        }, 500);
+      } else {
+        showAuthMsg(data.error || 'Could not create account. Please try again.', true);
+      }
+    } catch (err) {
+      showAuthMsg('Network error. Check your connection and try again.', true);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Create Account'; }
+    }
+  });
+
+  function showAuthMsg(text, isErr) {
+    const msg = document.getElementById('authMsg');
+    if (!msg) return;
+    if (!text) { msg.style.display = 'none'; return; }
+    msg.textContent = text;
+    msg.style.color = isErr ? '#ef4444' : '#22c55e';
+    msg.style.display = 'block';
+  }
+</script>

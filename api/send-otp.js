@@ -1,17 +1,6 @@
 // GnC Verdict — Vercel Serverless Function: POST /api/send-otp
-// Body: { email } (name/phone optional — login.html sends only email)
+// Body: { email, name?, phone? }
 // Sends a 6-digit verification code via Resend.
-//
-// OTP generation is STATELESS (HMAC-SHA256 of email + time-window with a secret),
-// so it works across serverless instances with no shared database.
-// Uses the Web Crypto API (global `crypto.subtle`) — available in Node 18+
-// runtimes and browsers, no imports required.
-//
-// Required Vercel environment variables:
-//   RESEND_API_KEY — from https://resend.com (also fixes the current 500 error)
-//   SENDER_EMAIL   — a verified sender, e.g. "GnC Verdict <noreply@gncsignal.com>"
-//   OTP_SECRET     — random hex string. Generate:
-//                      node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 const WINDOW_MS = 10 * 60 * 1000; // code valid for 10 minutes
 const RATE = new Map(); // email -> [timestamps] (best-effort, per instance)
@@ -42,6 +31,15 @@ function cleanRate() {
 }
 
 export default async function handler(req, res) {
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ success: false, error: 'Method not allowed. Use POST.' });
@@ -77,7 +75,7 @@ export default async function handler(req, res) {
       console.log('[DEV] OTP for ' + email + ' -> ' + otp);
       return res.status(200).json({ success: true, devOtp: otp });
     }
-    console.error('send-otp: RESEND_API_KEY is not set — this is why the endpoint was returning 500.');
+    console.error('send-otp: RESEND_API_KEY is not set');
     return res.status(500).json({ success: false, error: 'Email service not configured (missing RESEND_API_KEY).' });
   }
 

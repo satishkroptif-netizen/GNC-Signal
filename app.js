@@ -1,19 +1,6 @@
 // Gold n Crypto Traders — app.js
 
-// 1. Live ticker (demo data - real API connects in Phase 2)
-const TICKS = [
-  ["BTC", 97420, 2.4], ["ETH", 3412, 1.8], ["GOLD", 2915, 0.6],
-  ["SOL", 214, -1.2], ["BNB", 692, 0.9], ["XRP", 2.41, -0.8],
-  ["DOGE", 0.32, 3.1], ["SENSEX", 81455, 0.4]
-];
-(function(){
-  const t = document.getElementById('tickerTrack');
-  if(!t) return;
-  const html = TICKS.map(([s,p,c]) =>
-    `<span><b>${s}</b> $${p.toLocaleString('en-IN')} <b class="${c>=0?'up':'down'}">${c>=0?'▲':'▼'} ${Math.abs(c)}%</b></span>`
-  ).join('');
-  t.innerHTML = html + html; // loop ke liye duplicate
-})();
+// 1. Live ticker: now handled by ticker.js (real Binance prices — this demo block was fake data)
 
 // 2. Beginner mode toggle (macro section)
 (function(){

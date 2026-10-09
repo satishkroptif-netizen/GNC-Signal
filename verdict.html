@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="styles.css">
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script src="auth.js"></script>
+<script src="ticker.js"></script>
 <style>
 *{box-sizing:border-box}
 body{background:#0a0e1a;color:#fff;margin:0;font-family:Inter,system-ui,sans-serif;min-height:100vh}
@@ -58,8 +59,13 @@ footer{text-align:center;padding:1rem;color:#4a5568;font-size:.75rem;border-top:
   <div style="display:flex;gap:.5rem;align-items:center">
     <span class="live-badge" id="liveBadge"><span class="dot"></span> LIVE</span>
     <a href="index.html" style="color:#8b95a5;text-decoration:none;font-size:.8rem;padding:.4rem .7rem;border:1px solid #1e293b;border-radius:8px">Home</a>
+    <a href="search.html" style="color:#8b95a5;text-decoration:none;font-size:.8rem;padding:.4rem .7rem;border:1px solid #1e293b;border-radius:8px">🔍 Search</a>
+    <a href="performance.html" style="color:#8b95a5;text-decoration:none;font-size:.8rem;padding:.4rem .7rem;border:1px solid #1e293b;border-radius:8px">📈 Performance</a>
+    <a id="loginBtn" href="login.html" style="color:#f6c445;text-decoration:none;font-size:.8rem;font-weight:700;padding:.4rem .7rem;border:1px solid rgba(246,196,69,.45);border-radius:8px">Login</a>
   </div>
 </div>
+
+<div class="ticker"><div class="ticker-track" id="gncTickerTrack"><span>Connecting to Binance...</span></div></div>
 
 <div class="verdict-header">
   <h1>GnC Verdict</h1>
@@ -101,33 +107,38 @@ footer{text-align:center;padding:1rem;color:#4a5568;font-size:.75rem;border-top:
   Crypto and commodity trading involve substantial risk — do your own research and consult a qualified professional.
 </div>
 
-<!-- Auth Modal -->
+<!-- Auth Modal: Login / Sign Up tabs (email+password, no OTP) -->
 <div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;padding:1rem">
   <div style="background:#121827;border:1px solid #1e293b;border-radius:18px;padding:2rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-      <h2 style="margin:0;font-size:1.4rem">🔐 Verify to Continue</h2>
+      <h2 style="margin:0;font-size:1.4rem">🔐 Sign In / Sign Up</h2>
       <button onclick="hideAuthModal()" style="background:none;border:none;color:#8b95a5;font-size:1.5rem;cursor:pointer">&times;</button>
     </div>
-    <div id="signupStep">
-      <p class="muted" style="margin-bottom:1rem">Sign up with your email to view all timeframe verdicts. We'll send you a verification code.</p>
-      <form id="signupForm">
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="loginTab" type="button">Log In</button>
+      <button class="auth-tab" id="signupTab" type="button">Sign Up</button>
+    </div>
+
+    <div id="loginPane">
+      <form id="gncLoginForm">
+        <input id="loginEmail" type="email" placeholder="Email Address" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554">
+        <input id="loginPassword" type="password" placeholder="Password" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554">
+        <button class="btn btn-gold" type="submit" style="width:100%;margin-top:1rem">Log In</button>
+      </form>
+    </div>
+
+    <div id="signupPane" style="display:none">
+      <form id="gncSignupForm">
         <input id="signupName" type="text" placeholder="Your Name" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554">
         <input id="signupEmail" type="email" placeholder="Email Address" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554">
         <input id="signupPhone" type="tel" placeholder="Phone Number (10 digits)" pattern="[0-9]{10}" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554">
-        <button class="btn btn-gold" type="submit" style="width:100%;margin-top:1rem">Send Verification Code</button>
+        <input id="signupPassword" type="password" placeholder="Password (min 6 chars)" minlength="6" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554">
+        <button class="btn btn-gold" type="submit" style="width:100%;margin-top:1rem">Create Account</button>
       </form>
     </div>
-    <div id="otpStep" style="display:none">
-      <p class="muted" style="margin-bottom:1rem">Enter the 6-digit code sent to your email.</p>
-      <form id="otpForm">
-        <input id="otpCode" type="text" placeholder="Enter 6-digit OTP" maxlength="6" pattern="[0-9]{6}" required style="width:100%;padding:.8rem;margin:.5rem 0;border-radius:10px;background:#0d1424;color:#e8edf5;border:1px solid #2a3554;font-size:1.5rem;text-align:center;letter-spacing:.5rem">
-        <button class="btn btn-gold" type="submit" style="width:100%;margin-top:1rem">Verify & Continue</button>
-      </form>
-      <p style="text-align:center;margin-top:1rem"><a href="#" id="resendOtp" class="muted small">Resend OTP</a></p>
-      <p style="text-align:center;margin-top:.5rem"><a href="#" onclick="document.getElementById('otpStep').style.display='none';document.getElementById('signupStep').style.display='block'" class="muted small">← Back</a></p>
-    </div>
-    <!-- ✅ FIX: message area used by auth.js -->
-    <p id="authMsg" style="display:none"></p>
+
+    <p id="authMsg" style="display:none;margin:.8rem 0 0;font-size:.85rem;font-weight:600;text-align:center"></p>
   </div>
 </div>
 
@@ -137,7 +148,9 @@ footer{text-align:center;padding:1rem;color:#4a5568;font-size:.75rem;border-top:
     <div style="font-size:4rem;margin-bottom:1rem">🔒</div>
     <h2 style="font-size:1.8rem;margin-bottom:.5rem">Verdict Locked</h2>
     <p class="muted" style="margin-bottom:1.5rem">Sign up free to unlock all timeframe verdicts. No credit card required.</p>
-    <button onclick="showAuthModal()" class="btn btn-gold btn-lg">Sign Up Free →</button>
+    <button onclick="showAuthModal('signup')" class="btn btn-gold btn-lg">Sign Up Free →</button>
+    <!-- ✅ Login entry point on the paywall too -->
+    <p class="small" style="margin-top:.9rem"><a href="login.html?tab=login" style="color:#f6c445;text-decoration:underline">Already registered? Log in here</a></p>
     <!-- ✅ FIX: copy no longer contradicts the gate -->
     <p class="muted small" style="margin-top:1rem">One free verdict per device — sign up to unlock everything.</p>
   </div>
